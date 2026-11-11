@@ -1,0 +1,207 @@
+<!doctype html>
+<html lang="en" data-theme="slicerlive">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>DICOM SR — Measurements</title>
+  <link rel="stylesheet" href="themes.css?v=ira-presence">
+</head>
+<body>
+  <div id="app">
+    <header class="rp-header">
+      <div class="rp-header-start">
+        <span class="rp-brand">DICOM SR</span>
+        <button
+          type="button"
+          id="openWorklistBtn"
+          class="rp-viewer-btn"
+          data-i18n-rp="worklist"
+          title="Subscribe to the hub first"
+          disabled
+        >
+          Worklist
+        </button>
+      </div>
+      <div class="rp-header-center">
+        <section class="rp-panel rp-panel-compact rp-capsule" aria-labelledby="reportContext">
+          <div class="rp-panel-header">
+            <h1 id="reportContext" aria-live="polite">
+              <span class="rp-context-label">Current context:</span>
+              <span class="rp-context-value">none</span>
+            </h1>
+            <div class="rp-panel-header-end">
+              <button
+                type="button"
+                id="closeContextBtn"
+                class="rp-viewer-btn"
+                data-i18n-rp="close"
+                data-i18n-rp-title="closeContext"
+                title="Close current context"
+                hidden
+                disabled
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </section>
+      </div>
+      <div class="rp-header-actions">
+        <button
+          type="button"
+          id="startConferenceBtn"
+          class="rp-icon-btn"
+          aria-label="Conferencing"
+          title="Subscribe to the hub first"
+          disabled
+        ></button>
+        <button
+          type="button"
+          id="endConferenceBtn"
+          class="rp-conference-leave-badge"
+          aria-label="Leave conference"
+          title="Leave conference"
+          hidden
+          disabled
+        >
+          Leave conference
+        </button>
+        <div class="rp-lang-wrap">
+          <button
+            type="button"
+            id="langPickerBtn"
+            class="rp-icon-btn"
+            aria-label="Language"
+            title="Language"
+            aria-haspopup="listbox"
+            aria-expanded="false"
+          >
+            <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+              <circle cx="8" cy="8" r="6.25" fill="none" stroke="currentColor" stroke-width="1.25"/>
+              <path fill="none" stroke="currentColor" stroke-width="1.25" d="M2 8h12M8 2c1.8 1.8 2.7 3.7 2.7 6S9.8 12.2 8 14C6.2 12.2 5.3 10.3 5.3 8S6.2 3.8 8 2z"/>
+            </svg>
+          </button>
+          <ul id="langPickerMenu" class="rp-lang-menu" role="listbox" hidden></ul>
+        </div>
+        <div class="rp-menu-wrap">
+          <button
+            type="button"
+            id="castSettingsBtn"
+            class="rp-icon-btn"
+            aria-label="Help"
+            aria-haspopup="menu"
+            aria-expanded="false"
+            title="Help"
+          >
+            ?
+          </button>
+          <div id="castSettingsMenu" class="rp-menu" role="menu" hidden>
+            <button
+              type="button"
+              class="rp-menu-item"
+              role="menuitemradio"
+              aria-checked="true"
+              data-theme-option="slicerlive"
+            >
+              SlicerLive theme
+            </button>
+            <button
+              type="button"
+              class="rp-menu-item"
+              role="menuitemradio"
+              aria-checked="false"
+              data-theme-option="ohif"
+            >
+              OHIF theme
+            </button>
+            <div class="rp-menu-sep" role="separator"></div>
+            <button type="button" id="castAboutBtn" class="rp-menu-item" role="menuitem">
+              About…
+            </button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <section class="rp-apps" aria-label="Clients and image displays">
+      <div class="rp-viewer-btns">
+        <span class="rp-viewer-label rp-viewer-label-first" data-i18n-rp="viewers">Image Displays:</span>
+        <button
+          type="button"
+          id="openSlicerBtn"
+          class="rp-viewer-btn"
+          title="Subscribe to the hub first"
+          disabled
+        >
+          SlicerDesktop
+        </button>
+        <button
+          type="button"
+          id="openIraBtn"
+          class="rp-viewer-btn"
+          title="Subscribe to the hub first"
+          disabled
+        >
+          SlicerLive
+        </button>
+        <button
+          type="button"
+          id="openOhifBtn"
+          class="rp-viewer-btn"
+          title="Subscribe to the hub first"
+          disabled
+        >
+          OHIF
+        </button>
+        <button
+          type="button"
+          id="openSlimBtn"
+          class="rp-viewer-btn"
+          title="Subscribe to the hub first"
+          disabled
+        >
+          Slim
+        </button>
+      </div>
+    </section>
+
+    <main class="rp-main">
+      <section class="rp-panel" aria-label="Measurements" data-i18n-rp-aria="measurements">
+        <div id="reportDisplay" class="rp-report-display">
+          <div class="rp-empty" data-i18n-rp="noReportSelected">No report selected</div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="rp-footer" aria-label="Report actions">
+      <button type="button" id="reportCancelBtn" class="rp-viewer-btn">
+        Cancel
+      </button>
+      <button type="button" id="reportSaveBtn" class="rp-viewer-btn">
+        Save
+      </button>
+      <button type="button" id="reportCompleteBtn" class="rp-viewer-btn">
+        Complete
+      </button>
+    </footer>
+  </div>
+
+  <div id="aboutModal" class="rp-modal-backdrop" hidden>
+    <div class="rp-modal" role="dialog" aria-labelledby="aboutTitle">
+      <div class="rp-modal-header">
+        <h2 id="aboutTitle">About</h2>
+        <button type="button" class="rp-modal-close" data-close-modal aria-label="Close">×</button>
+      </div>
+      <div class="rp-modal-body">
+        <p>
+          Hub reporting client — measurements and links to segmentations on
+          the Image Display (<code>REPORTING_CLIENT</code>). SEG voxels stay in IRA.
+        </p>
+        <p class="rp-muted">Uses <code>@slicer-hub/client</code>.</p>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="reporting.js?v=png-send"></script>
+</body>
+</html>

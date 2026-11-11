@@ -1,0 +1,23 @@
+{
+  "name": "@slicer-hub/classroom",
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "build": "esbuild classroom.ts --bundle --format=esm --outfile=classroom.js",
+    "serve": "python -m http.server 8160"
+  },
+  "dependencies": {
+    "@slicer-hub/client": "*",
+    "@slicer-hub/conference-ui": "*",
+    "@slicer-hub/i18n": "*"
+  },
+  "devDependencies": {
+    "esbuild": "^0.21.5"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mbellehumeur/SlicerWebSub-js.git",
+    "directory": "packages/classroom"
+  }
+}

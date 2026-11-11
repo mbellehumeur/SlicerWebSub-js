@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="en" data-theme="slicerlive">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Classroom</title>
+  <link rel="stylesheet" href="themes.css?v=activity-row">
+</head>
+<body>
+  <div id="app">
+    <header class="rp-header">
+      <div class="rp-header-start">
+        <span class="rp-brand">Classroom</span>
+        <button
+          type="button"
+          id="openWorklistBtn"
+          class="rp-viewer-btn"
+          data-i18n-rp="worklist"
+          title="Subscribe to the hub first"
+          disabled
+        >
+          Worklist
+        </button>
+        <span class="rp-viewer-label" data-i18n-rp="viewers">Image Displays:</span>
+        <button
+          type="button"
+          id="openOhifBtn"
+          class="rp-viewer-btn"
+          title="Subscribe to the hub first"
+          disabled
+        >
+          OHIF
+        </button>
+        <button
+          type="button"
+          id="openIraBtn"
+          class="rp-viewer-btn"
+          title="Subscribe to the hub first"
+          disabled
+        >
+          SlicerLive
+        </button>
+      </div>
+      <div class="rp-header-title-wrap">
+        <label class="rp-visually-hidden" for="courseSelect">Course</label>
+        <select
+          id="courseSelect"
+          class="rp-header-title rp-course-select"
+          aria-label="Select course"
+        ></select>
+      </div>
+      <div class="rp-header-actions">
+        <button
+          type="button"
+          id="startConferenceBtn"
+          class="rp-icon-btn"
+          aria-label="Conferencing"
+          title="Subscribe to the hub first"
+          disabled
+        ></button>
+        <button
+          type="button"
+          id="endConferenceBtn"
+          class="rp-conference-leave-badge"
+          aria-label="Leave conference"
+          title="Leave conference"
+          hidden
+          disabled
+        >
+          Leave conference
+        </button>
+        <div class="rp-lang-wrap">
+          <button
+            type="button"
+            id="langPickerBtn"
+            class="rp-icon-btn"
+            aria-label="Language"
+            title="Language"
+            aria-haspopup="listbox"
+            aria-expanded="false"
+          >
+            <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+              <circle cx="8" cy="8" r="6.25" fill="none" stroke="currentColor" stroke-width="1.25"/>
+              <path fill="none" stroke="currentColor" stroke-width="1.25" d="M2 8h12M8 2c1.8 1.8 2.7 3.7 2.7 6S9.8 12.2 8 14C6.2 12.2 5.3 10.3 5.3 8S6.2 3.8 8 2z"/>
+            </svg>
+          </button>
+          <ul id="langPickerMenu" class="rp-lang-menu" role="listbox" hidden></ul>
+        </div>
+        <button
+          type="button"
+          id="castAboutBtn"
+          class="rp-icon-btn"
+          aria-label="About"
+          title="About"
+        >
+          ?
+        </button>
+      </div>
+    </header>
+
+    <main class="rp-main rp-main-classroom">
+      <section class="rp-panel rp-course-panel" aria-label="Course">
+        <div id="glossaryPanel" class="rp-course-display"></div>
+      </section>
+
+      <section class="rp-panel rp-scene-panel" aria-label="Classroom scene">
+        <div id="reportDisplay" class="rp-report-display">
+          <div class="rp-empty" data-i18n-rp="noReportSelected">No report selected</div>
+        </div>
+      </section>
+
+      <section class="rp-panel rp-chat-panel" aria-label="Classroom chat">
+        <details class="rp-collapse rp-conference-collapse">
+          <summary class="rp-collapse-summary">
+            <span id="conferenceLogTitle" class="rp-section-title">Classroom Chat</span>
+          </summary>
+          <div class="rp-collapse-body">
+            <textarea
+              id="conferenceLog"
+              class="rp-conference-log"
+              readonly
+              rows="8"
+              aria-live="polite"
+            ></textarea>
+            <form id="conferenceChatForm" class="rp-conference-chat-form">
+              <input
+                id="conferenceChatInput"
+                class="rp-conference-chat-input"
+                type="text"
+                maxlength="500"
+                autocomplete="off"
+                placeholder="Message the conference…"
+                disabled
+              />
+              <button
+                type="submit"
+                id="conferenceChatSend"
+                class="rp-viewer-btn"
+                disabled
+              >
+                Send
+              </button>
+            </form>
+          </div>
+        </details>
+      </section>
+    </main>
+  </div>
+
+  <div id="aboutModal" class="rp-modal-backdrop" hidden>
+    <div class="rp-modal rp-about-modal" role="dialog" aria-labelledby="aboutTitle">
+      <div class="rp-modal-header">
+        <h2 id="aboutTitle">About this application</h2>
+        <button type="button" class="rp-modal-close" data-close-modal aria-label="Close">×</button>
+      </div>
+      <div id="aboutModalContent" class="rp-modal-body rp-about-body"></div>
+    </div>
+  </div>
+
+  <script type="module" src="classroom.js?v=png-send"></script>
+</body>
+</html>
