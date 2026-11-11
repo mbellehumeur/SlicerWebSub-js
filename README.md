@@ -1,7 +1,7 @@
 # SlicerWebSub-js
 
 <p align="center">
-  <img src="docs/images/banner.png" alt="Slicer WebSub Banner" width="100%">
+  <img src="docs/images/banner.jpg" alt="Slicer WebSub Banner" width="100%">
 </p>
 
 JavaScript monorepo for **Slicer WebSub** browser apps and the shared hub client library.
