@@ -88,7 +88,7 @@ function NeuroSegDialog({
 
   const availabilityMessage = (() => {
     if (!wsConnected) {
-      return 'Connect to the Slicer Hub';
+      return 'Connect to the Slicer WebSub';
     }
     if (availabilityChecking) {
       return 'Checking neurosegmentation availability…';
@@ -104,7 +104,7 @@ function NeuroSegDialog({
     : availabilityChecking
       ? 'Checking neurosegmentation availability…'
       : !wsConnected
-        ? 'Connect to the Slicer Hub'
+        ? 'Connect to the Slicer WebSub'
         : !neuroSegAvailable
           ? 'Neurosegmentation is not available right now.'
           : 'Send active series to neurosegmentation (NIfTI when available)';

@@ -89,7 +89,7 @@ export const ro: LocaleBundle = {
           <li>
             <a href="https://www.slicer.org/" target="_blank" rel="noopener">3D Slicer</a>
             — a desktop platform for visualization, analysis, and research.
-            <a href="https://github.com/mbellehumeur/SlicerWebSub" target="_blank" rel="noopener">Slicer Hub</a>
+            <a href="https://github.com/mbellehumeur/SlicerWebSub" target="_blank" rel="noopener">Slicer WebSub</a>
             runs as a Slicer extension so Classroom, conferencing, and image
             display can share one open messaging stack with the same data and tools.
           </li>
@@ -119,7 +119,7 @@ export const ro: LocaleBundle = {
     howto0Body:
       `
       <ol class="wl-help-steps">
-        <li>Instalați extensia Slicer Hub Interface</li>
+        <li>Instalați extensia Slicer WebSub Interface</li>
         <li>În <strong>3D Slicer</strong>, deschideți modulul <strong>Hub Interface</strong>, apoi secțiunea <strong>Image Display Client</strong>.</li>
         <li>Alegeți hub-ul <strong>SLICER-HUB-CLOUD</strong> (același hub cloud ca această worklist). Folosiți <strong>SLICER-HUB</strong> doar când rulați un hub local pe portul 2018.</li>
         <li>Fără OIDC, setați <strong>User</strong> la același utilizator ca worklist-ul cloud (stânga sus), apoi faceți clic pe <strong>Connect</strong>.</li>

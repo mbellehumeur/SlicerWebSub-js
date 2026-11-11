@@ -89,7 +89,7 @@ export const ca: LocaleBundle = {
           <li>
             <a href="https://www.slicer.org/" target="_blank" rel="noopener">3D Slicer</a>
             — a desktop platform for visualization, analysis, and research.
-            <a href="https://github.com/mbellehumeur/SlicerWebSub" target="_blank" rel="noopener">Slicer Hub</a>
+            <a href="https://github.com/mbellehumeur/SlicerWebSub" target="_blank" rel="noopener">Slicer WebSub</a>
             runs as a Slicer extension so Classroom, conferencing, and image
             display can share one open messaging stack with the same data and tools.
           </li>
@@ -118,7 +118,7 @@ export const ca: LocaleBundle = {
     howto0Title: 'Com connectar Worklist a 3D Slicer.',
     howto0Body: `
       <ol class="wl-help-steps">
-        <li>Instal·leu l’extensió Slicer Hub Interface</li>
+        <li>Instal·leu l’extensió Slicer WebSub Interface</li>
         <li>A <strong>3D Slicer</strong>, obriu el mòdul <strong>Hub Interface</strong> i la secció <strong>Image Display Client</strong>.</li>
         <li>Trieu el hub <strong>SLICER-HUB-CLOUD</strong> (el mateix hub al núvol que aquesta llista). Useu <strong>SLICER-HUB</strong> només si executeu un hub local al port 2018.</li>
         <li>Sense OIDC, poseu <strong>User</strong> igual que l’usuari de la llista al núvol (a dalt a l’esquerra) i feu clic a <strong>Connect</strong>.</li>

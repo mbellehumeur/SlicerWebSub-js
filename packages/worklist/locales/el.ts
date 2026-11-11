@@ -89,7 +89,7 @@ export const el: LocaleBundle = {
           <li>
             <a href="https://www.slicer.org/" target="_blank" rel="noopener">3D Slicer</a>
             — a desktop platform for visualization, analysis, and research.
-            <a href="https://github.com/mbellehumeur/SlicerWebSub" target="_blank" rel="noopener">Slicer Hub</a>
+            <a href="https://github.com/mbellehumeur/SlicerWebSub" target="_blank" rel="noopener">Slicer WebSub</a>
             runs as a Slicer extension so Classroom, conferencing, and image
             display can share one open messaging stack with the same data and tools.
           </li>
@@ -119,7 +119,7 @@ export const el: LocaleBundle = {
     howto0Body:
       `
       <ol class="wl-help-steps">
-        <li>Εγκαταστήστε την επέκταση Slicer Hub Interface</li>
+        <li>Εγκαταστήστε την επέκταση Slicer WebSub Interface</li>
         <li>Στο <strong>3D Slicer</strong> ανοίξτε τη module <strong>Hub Interface</strong> και την ενότητα <strong>Image Display Client</strong>.</li>
         <li>Επιλέξτε hub <strong>SLICER-HUB-CLOUD</strong> (το ίδιο cloud hub με αυτή τη worklist). Χρησιμοποιήστε <strong>SLICER-HUB</strong> μόνο αν τρέχετε τοπικό hub στη θύρα 2018.</li>
         <li>Χωρίς OIDC, ορίστε <strong>User</strong> στον ίδιο χρήστη με το cloud worklist (πάνω αριστερά) και κάντε κλικ <strong>Connect</strong>.</li>

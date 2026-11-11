@@ -1,6 +1,6 @@
 # @slicer-hub/ohif-extension
 
-OHIF Slicer Hub (FHIRcast) extension for the Image Display actor. Protocol traffic
+OHIF Slicer WebSub (FHIRcast) extension for the Image Display actor. Protocol traffic
 goes through [`@slicer-hub/client`](../client).
 
 ## Install (local monorepo)

@@ -89,7 +89,7 @@ export const lv: LocaleBundle = {
           <li>
             <a href="https://www.slicer.org/" target="_blank" rel="noopener">3D Slicer</a>
             — a desktop platform for visualization, analysis, and research.
-            <a href="https://github.com/mbellehumeur/SlicerWebSub" target="_blank" rel="noopener">Slicer Hub</a>
+            <a href="https://github.com/mbellehumeur/SlicerWebSub" target="_blank" rel="noopener">Slicer WebSub</a>
             runs as a Slicer extension so Classroom, conferencing, and image
             display can share one open messaging stack with the same data and tools.
           </li>
@@ -119,7 +119,7 @@ export const lv: LocaleBundle = {
     howto0Body:
       `
       <ol class="wl-help-steps">
-        <li>Instalējiet Slicer Hub Interface paplašinājumu</li>
+        <li>Instalējiet Slicer WebSub Interface paplašinājumu</li>
         <li><strong>3D Slicer</strong> atveriet moduli <strong>Hub Interface</strong> un sadaļu <strong>Image Display Client</strong>.</li>
         <li>Izvēlieties hubu <strong>SLICER-HUB-CLOUD</strong> (tas pats mākoņa hubs kā šai worklist). Izmantojiet <strong>SLICER-HUB</strong> tikai, ja darbināt lokālu hubu portā 2018.</li>
         <li>Bez OIDC iestatiet <strong>User</strong> uz to pašu lietotāju kā mākoņa worklist (augšā pa kreisi), tad noklikšķiniet <strong>Connect</strong>.</li>

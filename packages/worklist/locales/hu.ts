@@ -89,7 +89,7 @@ export const hu: LocaleBundle = {
           <li>
             <a href="https://www.slicer.org/" target="_blank" rel="noopener">3D Slicer</a>
             — a desktop platform for visualization, analysis, and research.
-            <a href="https://github.com/mbellehumeur/SlicerWebSub" target="_blank" rel="noopener">Slicer Hub</a>
+            <a href="https://github.com/mbellehumeur/SlicerWebSub" target="_blank" rel="noopener">Slicer WebSub</a>
             runs as a Slicer extension so Classroom, conferencing, and image
             display can share one open messaging stack with the same data and tools.
           </li>
@@ -119,7 +119,7 @@ export const hu: LocaleBundle = {
     howto0Body:
       `
       <ol class="wl-help-steps">
-        <li>Telepítse a Slicer Hub Interface bővítményt</li>
+        <li>Telepítse a Slicer WebSub Interface bővítményt</li>
         <li>A <strong>3D Slicer</strong>-ben nyissa meg a <strong>Hub Interface</strong> modult, majd az <strong>Image Display Client</strong> szekciót.</li>
         <li>Válassza a <strong>SLICER-HUB-CLOUD</strong> hubot (ugyanaz a felhő hub, mint ennél a worklistnél). A <strong>SLICER-HUB</strong>-ot csak akkor használja, ha helyi hub fut a 2018-as porton.</li>
         <li>OIDC nélkül állítsa a <strong>User</strong> mezőt ugyanarra a felhasználóra, mint a felhő worklist (bal felső), majd kattintson a <strong>Connect</strong> gombra.</li>

@@ -89,7 +89,7 @@ export const no: LocaleBundle = {
           <li>
             <a href="https://www.slicer.org/" target="_blank" rel="noopener">3D Slicer</a>
             — a desktop platform for visualization, analysis, and research.
-            <a href="https://github.com/mbellehumeur/SlicerWebSub" target="_blank" rel="noopener">Slicer Hub</a>
+            <a href="https://github.com/mbellehumeur/SlicerWebSub" target="_blank" rel="noopener">Slicer WebSub</a>
             runs as a Slicer extension so Classroom, conferencing, and image
             display can share one open messaging stack with the same data and tools.
           </li>
@@ -119,7 +119,7 @@ export const no: LocaleBundle = {
     howto0Body:
       `
       <ol class="wl-help-steps">
-        <li>Installer Slicer Hub Interface-utvidelsen</li>
+        <li>Installer Slicer WebSub Interface-utvidelsen</li>
         <li>I <strong>3D Slicer</strong>, åpne modulen <strong>Hub Interface</strong>, deretter seksjonen <strong>Image Display Client</strong>.</li>
         <li>Velg hub <strong>SLICER-HUB-CLOUD</strong> (samme skyhub som denne worklisten). Bruk <strong>SLICER-HUB</strong> bare når du kjører en lokal hub på port 2018.</li>
         <li>Uten OIDC, sett <strong>User</strong> til samme bruker som sky-worklisten (øverst til venstre), og klikk <strong>Connect</strong>.</li>

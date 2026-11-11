@@ -1,10 +1,10 @@
 # SlicerWebSub-js
 
 <p align="center">
-  <img src="docs/images/banner.jpg" alt="Slicer Hub Banner" width="100%">
+  <img src="docs/images/banner.png" alt="Slicer WebSub Banner" width="100%">
 </p>
 
-JavaScript monorepo for **Slicer Hub** browser apps and the shared hub client library.
+JavaScript monorepo for **Slicer WebSub** browser apps and the shared hub client library.
 
 ## Packages
 
@@ -20,7 +20,7 @@ JavaScript monorepo for **Slicer Hub** browser apps and the shared hub client li
 
 ## Worklist and Classroom
 
-[`packages/worklist`](packages/worklist) (`@slicer-hub/worklist`) is the browser worklist client for Slicer Hub.
+[`packages/worklist`](packages/worklist) (`@slicer-hub/worklist`) is the browser worklist client for Slicer WebSub.
 
 The worklist application allows educators to create cohorts of [Imaging Data Commons](https://imaging.datacommons.cancer.gov/) (IDC) studies and save/load them as teaching files to use with conferencing.
 
@@ -36,7 +36,7 @@ Viewing is powered by open-source platforms that share IDC’s commitment to acc
 
 - [OHIF](https://ohif.org/) — a web-based medical image viewer built on open standards (including DICOMweb). It is widely used in research and education, and is designed so modes and extensions can grow with teaching and clinical workflows.
 - [Slim](https://github.com/ImagingDataCommons/slim) — an interoperable slide microscopy viewer from the Imaging Data Commons (National Cancer Institute), for teaching and research with whole-slide imaging.
-- [3D Slicer](https://www.slicer.org/) — a desktop platform for visualization, analysis, and research. [Slicer Hub](https://github.com/mbellehumeur/SlicerWebSub) runs as a Slicer extension so Classroom, conferencing, and image display can share one open messaging stack with the same data and tools.
+- [3D Slicer](https://www.slicer.org/) — a desktop platform for visualization, analysis, and research. [Slicer WebSub](https://github.com/mbellehumeur/SlicerWebSub) runs as a Slicer extension so Classroom, conferencing, and image display can share one open messaging stack with the same data and tools.
 
 For open anatomy education, see the [Open Anatomy Project](https://www.openanatomy.org/) at Brigham and Women’s Hospital. It distributes high-quality anatomy atlases and open-source software worldwide—democratizing medical knowledge for students, clinicians, researchers, and the public, wherever they live and in many languages. Atlases are viewed in the web-based Open Anatomy Browser; the group also created [3D Slicer](https://www.slicer.org/), which was used to build the atlases.
 
@@ -121,7 +121,7 @@ See [LICENSE](LICENSE).
 
 ## Acknowledgements
 
-**3D Slicer** — open-source platform for medical image computing from the [3D Slicer community](https://www.slicer.org/). These clients connect to [Slicer Hub](https://github.com/mbellehumeur/SlicerWebSub), which runs as a Slicer extension.
+**3D Slicer** — open-source platform for medical image computing from the [3D Slicer community](https://www.slicer.org/). These clients connect to [Slicer WebSub](https://github.com/mbellehumeur/SlicerWebSub), which runs as a Slicer extension.
 
 **Imaging Data Commons (IDC)** — public cancer imaging collections from the [National Cancer Institute](https://imaging.datacommons.cancer.gov/), used for worklist cohorts, classroom activities, and conferencing demos. The hub example links to or loads studies from their original sources; it does not redistribute them.
 

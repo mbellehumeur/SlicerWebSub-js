@@ -1,7 +1,7 @@
 {
   "name": "@slicer-hub/ohif-extension",
   "version": "0.1.0",
-  "description": "OHIF Slicer Hub extension (Image Display) using @slicer-hub/client",
+  "description": "OHIF Slicer WebSub extension (Image Display) using @slicer-hub/client",
   "license": "BSD-3-Clause",
   "repository": {
     "type": "git",

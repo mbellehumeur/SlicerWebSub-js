@@ -1,7 +1,7 @@
 {
   "name": "@slicer-hub/i18n",
   "version": "0.1.0",
-  "description": "Shared locale strings for Slicer Hub JS clients",
+  "description": "Shared locale strings for Slicer WebSub JS clients",
   "type": "module",
   "license": "MIT",
   "repository": {

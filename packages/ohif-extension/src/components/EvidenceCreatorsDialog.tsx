@@ -493,7 +493,7 @@ function EvidenceCreatorsDialog({
         : '';
       return `FleXray runs locally in the browser (WebGPU / WASM).${size}`;
     }
-    if (!wsConnected) return 'Connect to the Slicer Hub to run inference.';
+    if (!wsConnected) return 'Connect to the Slicer WebSub to run inference.';
     if (probing) return 'Checking server status…';
     if (!selectedOnline) return 'Selected server is offline.';
     if (selectedLocalCapable) {
@@ -506,7 +506,7 @@ function EvidenceCreatorsDialog({
     if (sending) return isFlexray ? 'Running FleXray locally…' : 'Sending study URLs…';
     if (!hasOpenStudy) return 'Open a study first';
     if (isFlexray) return 'Run FleXray locally on the active image';
-    if (!wsConnected) return 'Connect to the Slicer Hub';
+    if (!wsConnected) return 'Connect to the Slicer WebSub';
     if (probing) return 'Checking server status…';
     if (!selectedServer) return 'Select an Evidence Creator';
     if (!selectedOnline) return 'Selected server is offline';

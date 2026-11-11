@@ -89,7 +89,7 @@ export const lt: LocaleBundle = {
           <li>
             <a href="https://www.slicer.org/" target="_blank" rel="noopener">3D Slicer</a>
             — a desktop platform for visualization, analysis, and research.
-            <a href="https://github.com/mbellehumeur/SlicerWebSub" target="_blank" rel="noopener">Slicer Hub</a>
+            <a href="https://github.com/mbellehumeur/SlicerWebSub" target="_blank" rel="noopener">Slicer WebSub</a>
             runs as a Slicer extension so Classroom, conferencing, and image
             display can share one open messaging stack with the same data and tools.
           </li>
@@ -119,7 +119,7 @@ export const lt: LocaleBundle = {
     howto0Body:
       `
       <ol class="wl-help-steps">
-        <li>Įdiekite Slicer Hub Interface plėtinį</li>
+        <li>Įdiekite Slicer WebSub Interface plėtinį</li>
         <li><strong>3D Slicer</strong> atidarykite modulį <strong>Hub Interface</strong> ir skiltį <strong>Image Display Client</strong>.</li>
         <li>Pasirinkite hubą <strong>SLICER-HUB-CLOUD</strong> (tas pats debesies hubas kaip šioje worklist). Naudokite <strong>SLICER-HUB</strong> tik kai vietinis hubas veikia 2018 prievade.</li>
         <li>Be OIDC nustatykite <strong>User</strong> tą patį vartotoją kaip debesies worklist (viršuje kairėje), tada spustelėkite <strong>Connect</strong>.</li>

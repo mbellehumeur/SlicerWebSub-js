@@ -89,7 +89,7 @@ export const uk: LocaleBundle = {
           <li>
             <a href="https://www.slicer.org/" target="_blank" rel="noopener">3D Slicer</a>
             — a desktop platform for visualization, analysis, and research.
-            <a href="https://github.com/mbellehumeur/SlicerWebSub" target="_blank" rel="noopener">Slicer Hub</a>
+            <a href="https://github.com/mbellehumeur/SlicerWebSub" target="_blank" rel="noopener">Slicer WebSub</a>
             runs as a Slicer extension so Classroom, conferencing, and image
             display can share one open messaging stack with the same data and tools.
           </li>
@@ -118,7 +118,7 @@ export const uk: LocaleBundle = {
     howto0Title: 'Як підключити Worklist до 3D Slicer.',
     howto0Body: `
       <ol class="wl-help-steps">
-        <li>Установіть розширення Slicer Hub Interface</li>
+        <li>Установіть розширення Slicer WebSub Interface</li>
         <li>У <strong>3D Slicer</strong> відкрийте модуль <strong>Hub Interface</strong>, потім розділ <strong>Image Display Client</strong>.</li>
         <li>Виберіть хаб <strong>SLICER-HUB-CLOUD</strong> (той самий хмарний хаб, що й у цієї worklist). Використовуйте <strong>SLICER-HUB</strong> лише якщо запускаєте локальний хаб на порту 2018.</li>
         <li>Без OIDC установіть <strong>User</strong> на того самого користувача, що й у хмарній worklist (зліва вгорі), потім натисніть <strong>Connect</strong>.</li>

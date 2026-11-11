@@ -89,7 +89,7 @@ export const cs: LocaleBundle = {
           <li>
             <a href="https://www.slicer.org/" target="_blank" rel="noopener">3D Slicer</a>
             — a desktop platform for visualization, analysis, and research.
-            <a href="https://github.com/mbellehumeur/SlicerWebSub" target="_blank" rel="noopener">Slicer Hub</a>
+            <a href="https://github.com/mbellehumeur/SlicerWebSub" target="_blank" rel="noopener">Slicer WebSub</a>
             runs as a Slicer extension so Classroom, conferencing, and image
             display can share one open messaging stack with the same data and tools.
           </li>
@@ -118,7 +118,7 @@ export const cs: LocaleBundle = {
     howto0Title: 'Jak připojit Worklist k 3D Slicer.',
     howto0Body: `
       <ol class="wl-help-steps">
-        <li>Nainstalujte rozšíření Slicer Hub Interface</li>
+        <li>Nainstalujte rozšíření Slicer WebSub Interface</li>
         <li>Ve <strong>3D Slicer</strong> otevřete modul <strong>Hub Interface</strong> a sekci <strong>Image Display Client</strong>.</li>
         <li>Zvolte hub <strong>SLICER-HUB-CLOUD</strong> (stejný cloudový hub jako tato worklist). <strong>SLICER-HUB</strong> použijte pouze při lokálním hubu na portu 2018.</li>
         <li>Bez OIDC nastavte <strong>User</strong> na stejného uživatele jako cloudová worklist (vlevo nahoře) a klikněte na <strong>Connect</strong>.</li>

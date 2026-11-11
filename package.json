@@ -2,7 +2,7 @@
   "name": "slicer-hub-js-clients",
   "version": "0.1.0",
   "private": true,
-  "description": "Slicer Hub browser clients and shared JS hub client",
+  "description": "Slicer WebSub browser clients and shared JS hub client",
   "workspaces": [
     "packages/*"
   ],

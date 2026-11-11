@@ -89,7 +89,7 @@ export const ko: LocaleBundle = {
           <li>
             <a href="https://www.slicer.org/" target="_blank" rel="noopener">3D Slicer</a>
             — a desktop platform for visualization, analysis, and research.
-            <a href="https://github.com/mbellehumeur/SlicerWebSub" target="_blank" rel="noopener">Slicer Hub</a>
+            <a href="https://github.com/mbellehumeur/SlicerWebSub" target="_blank" rel="noopener">Slicer WebSub</a>
             runs as a Slicer extension so Classroom, conferencing, and image
             display can share one open messaging stack with the same data and tools.
           </li>
@@ -118,7 +118,7 @@ export const ko: LocaleBundle = {
     howto0Title: '3D Slicer에 Worklist 연결하기.',
     howto0Body: `
       <ol class="wl-help-steps">
-        <li>Slicer Hub Interface 확장을 설치합니다</li>
+        <li>Slicer WebSub Interface 확장을 설치합니다</li>
         <li><strong>3D Slicer</strong>에서 <strong>Hub Interface</strong> 모듈을 연 다음 <strong>Image Display Client</strong> 섹션으로 이동합니다.</li>
         <li>허브로 <strong>SLICER-HUB-CLOUD</strong>를 선택합니다(이 워크리스트와 동일한 클라우드 허브). 포트 2018의 로컬 허브를 실행 중일 때만 <strong>SLICER-HUB</strong>를 사용하세요.</li>
         <li>OIDC를 사용하지 않으면 <strong>User</strong>를 클라우드 워크리스트(왼쪽 위)와 같은 사용자로 설정한 뒤 <strong>Connect</strong>를 클릭합니다.</li>

@@ -1,7 +1,7 @@
 # @slicer-hub/conference-ui
 
 Vanilla DOM conference dialogs, presence controls, strings, icons, and helpers
-for Slicer Hub applications.
+for Slicer WebSub applications.
 
 ```js
 import {

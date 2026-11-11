@@ -203,7 +203,7 @@ function ConferenceDialog({
     const endpoint = hubEndpoint.trim();
     if (!wsConnected) {
       setStatusKind('error');
-      setStatusMessage('Connect to the Slicer Hub first.');
+      setStatusMessage('Connect to the Slicer WebSub first.');
       return;
     }
     if (!sessionTopic) {

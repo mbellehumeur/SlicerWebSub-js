@@ -111,7 +111,7 @@ async function fetchAboutMeta(origin: string | null): Promise<AboutMeta> {
 
 function aboutBannerSrc(origin: string | null): string {
   const base = origin || '';
-  return `${base}/static/images/banner.jpg`;
+  return `${base}/static/images/banner.png`;
 }
 
 function renderAboutContent(
@@ -128,7 +128,7 @@ function renderAboutContent(
       <img class="about-banner" src="${escapeHtml(aboutBannerSrc(origin))}"
            alt="${escapeHtml(meta.name)}">
     </div>
-    <p class="about-body">${escapeHtml(meta.description)} This Integrated Worklist client connects to a Slicer hub as <code>WORKLIST_CLIENT</code>. See the <a href="${escapeHtml(meta.homepage)}" target="_blank" rel="noopener noreferrer">3D Slicer Hub interface extension</a> documentation.</p>
+    <p class="about-body">${escapeHtml(meta.description)} This Integrated Worklist client connects to a Slicer hub as <code>WORKLIST_CLIENT</code>. See the <a href="${escapeHtml(meta.homepage)}" target="_blank" rel="noopener noreferrer">3D Slicer WebSub interface extension</a> documentation.</p>
     ${aboutLicenseAckHtml(meta.homepage)}
     ${ABOUT_SAMPLE_DATA_ACK_HTML}
     ${ABOUT_RESOURCE_SERVERS_ACK_HTML}

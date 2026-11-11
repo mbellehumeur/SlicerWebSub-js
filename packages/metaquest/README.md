@@ -11,7 +11,7 @@ Product name: `SLICERLIVE-METAQUEST`. Opened from the worklist **MetaQuest** but
 Mesh streaming to Quest (GLB + local three.js render + WebXR) was inspired by
 **[SlicerRemoteView](https://github.com/dolegadolegowski/SlicerRemoteView)** by
 **Damian Dołęga-Dołęgowski** ([@dolegadolegowski](https://github.com/dolegadolegowski)),
-MIT License. This package speaks Slicer Hub instead of the RemoteView relay and does not
+MIT License. This package speaks Slicer WebSub instead of the RemoteView relay and does not
 vendor or depend on that repository at runtime.
 
 Rendering uses [three.js](https://threejs.org/) and Hub connectivity uses `@slicer-hub/client`

@@ -60,7 +60,7 @@ const en: ClassroomAbout = {
           <li>
             <a href="${SLICER_URL}" target="_blank" rel="noopener">3D Slicer</a>
             — a desktop platform for visualization, analysis, and research.
-            <a href="${HUB_URL}" target="_blank" rel="noopener">Slicer Hub</a>
+            <a href="${HUB_URL}" target="_blank" rel="noopener">Slicer WebSub</a>
             runs as a Slicer extension so Classroom, conferencing, and image
             display can share one open messaging stack with the same data and tools.
           </li>
@@ -142,7 +142,7 @@ const fr: ClassroomAbout = {
             <a href="${SLICER_URL}" target="_blank" rel="noopener">3D Slicer</a>
             — plateforme de bureau pour la visualisation, l’analyse et la
             recherche.
-            <a href="${HUB_URL}" target="_blank" rel="noopener">Slicer Hub</a>
+            <a href="${HUB_URL}" target="_blank" rel="noopener">Slicer WebSub</a>
             s’exécute comme extension Slicer afin que Classroom, la conférence et
             l’affichage d’images partagent une même pile de messagerie ouverte,
             avec les mêmes données et outils.
@@ -226,7 +226,7 @@ const de: ClassroomAbout = {
           <li>
             <a href="${SLICER_URL}" target="_blank" rel="noopener">3D Slicer</a>
             — eine Desktop-Plattform für Visualisierung, Analyse und Forschung.
-            <a href="${HUB_URL}" target="_blank" rel="noopener">Slicer Hub</a>
+            <a href="${HUB_URL}" target="_blank" rel="noopener">Slicer WebSub</a>
             läuft als Slicer-Erweiterung, sodass Classroom, Konferenz und
             Bildanzeige denselben offenen Messaging-Stack mit denselben Daten und
             Werkzeugen nutzen.

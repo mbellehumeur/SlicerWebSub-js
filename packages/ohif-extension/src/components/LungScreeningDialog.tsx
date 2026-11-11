@@ -88,7 +88,7 @@ function LungScreeningDialog({
 
   const availabilityMessage = (() => {
     if (!wsConnected) {
-      return 'Connect to the Slicer Hub';
+      return 'Connect to the Slicer WebSub';
     }
     if (availabilityChecking) {
       return 'Checking lung screening availability…';
@@ -104,7 +104,7 @@ function LungScreeningDialog({
     : availabilityChecking
       ? 'Checking lung screening availability…'
       : !wsConnected
-        ? 'Connect to the Slicer Hub'
+        ? 'Connect to the Slicer WebSub'
         : !lungScreeningAvailable
           ? 'Lung screening is not available right now.'
           : 'Send active series URLs to lung screening (DICOM or NIfTI)';

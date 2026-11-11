@@ -1,7 +1,7 @@
 {
   "name": "@slicer-hub/conference-ui",
   "version": "0.1.0",
-  "description": "Vanilla DOM conference UI for Slicer Hub applications",
+  "description": "Vanilla DOM conference UI for Slicer WebSub applications",
   "type": "module",
   "license": "BSD-3-Clause",
   "repository": {

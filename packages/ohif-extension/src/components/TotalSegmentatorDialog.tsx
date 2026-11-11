@@ -127,7 +127,7 @@ function TotalSegmentatorDialog({
 
   const availabilityMessage = (() => {
     if (!wsConnected) {
-      return 'Connect to the Slicer Hub';
+      return 'Connect to the Slicer WebSub';
     }
     if (availabilityChecking) {
       return 'Checking Total Segmentator availability…';
@@ -143,7 +143,7 @@ function TotalSegmentatorDialog({
     : availabilityChecking
       ? 'Checking Total Segmentator availability…'
       : !wsConnected
-        ? 'Connect to the Slicer Hub'
+        ? 'Connect to the Slicer WebSub'
         : !totalSegmentatorAvailable
           ? 'Total Segmentator is not available on this topic'
           : 'Send study URLs to Total Segmentator (no binary upload from OHIF)';
