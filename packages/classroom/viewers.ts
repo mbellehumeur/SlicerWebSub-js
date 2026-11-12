@@ -13,6 +13,9 @@ import {
 } from '@slicer-hub/i18n';
 import type { AppState } from './hub';
 import {
+  applySpaParam,
+  getHubDefinitions,
+  hubOriginFromEndpoint,
   LOG_PREFIX,
   resolveViewerUrls,
   resolveWorklistUrl,
@@ -46,10 +49,18 @@ function sessionToken(state: AppState): string {
   }
 }
 
+function spaResolveOpts(state: AppState): { hubOrigin: string | null } {
+  const def = getHubDefinitions()[state.hubKey];
+  return {
+    hubOrigin: hubOriginFromEndpoint(def?.hubEndpoint || ''),
+  };
+}
+
 function withSessionParams(url: URL, state: AppState): void {
   if (state.topic) url.searchParams.set('topic', state.topic);
   const token = sessionToken(state);
   if (token) url.searchParams.set('id-token', token);
+  applySpaParam(url);
 }
 
 function popupFeatures(width: number, height: number): string {
@@ -166,7 +177,7 @@ export function openHubViewer(state: AppState, kind: ViewerKind): boolean {
   }
   if (kind === 'ira') {
     if (focusExistingIraWindow(state)) return true;
-    const url = new URL(resolveViewerUrls().ira);
+    const url = new URL(resolveViewerUrls(undefined, spaResolveOpts(state)).ira);
     withSessionParams(url, state);
     if (state.conference) {
       if (state.conferenceFollowChoice === false) {
@@ -196,7 +207,9 @@ export function openHubViewer(state: AppState, kind: ViewerKind): boolean {
   }
   if (kind === 'ohif') {
     if (focusExistingOhifWindow(state)) return true;
-    const url = new URL(resolveViewerUrls().ohif);
+    const url = new URL(
+      resolveViewerUrls(undefined, spaResolveOpts(state)).ohif
+    );
     withSessionParams(url, state);
     const win = window.open(url.toString(), ohifWindowName(state));
     if (win) {
@@ -216,7 +229,7 @@ export function openHubViewer(state: AppState, kind: ViewerKind): boolean {
     );
     return false;
   }
-  const url = new URL(resolveViewerUrls()[kind]);
+  const url = new URL(resolveViewerUrls(undefined, spaResolveOpts(state))[kind]);
   withSessionParams(url, state);
   const size = { width: 800, height: 600 };
   const name = `hubViewer-${kind}`;
@@ -232,9 +245,8 @@ export function openWorklist(state: AppState): void {
   }
   if (focusExistingWorklistWindow()) return;
 
-  const url = new URL(resolveWorklistUrl());
-  withSessionParams(url, state);
-  const win = window.open(url.toString(), WORKLIST_WINDOW_NAME);
+  const url = new URL(resolveWorklistUrl(undefined, spaResolveOpts(state)));
+  withSessionParams(url, state);  const win = window.open(url.toString(), WORKLIST_WINDOW_NAME);
   if (win) worklistWindow = win;
 }
 

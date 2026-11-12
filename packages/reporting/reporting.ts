@@ -54,9 +54,12 @@ import {
   type AppState,
 } from './hub';
 import {
+  getSpaSource,
   getStoredTableColumnOrder,
   getStoredTheme,
+  normalizeSpaSource,
   REPORTING_ACTOR,
+  setSpaSource,
   setStoredTableColumnOrder,
   setStoredTheme,
   THEME_OHIF,
@@ -345,6 +348,15 @@ function boot(): void {
   applyTheme(getStoredTheme());
 
   const state = createInitialState();
+  const spaSelect = document.getElementById(
+    'spaSourceSelect'
+  ) as HTMLSelectElement | null;
+  if (spaSelect) {
+    spaSelect.value = getSpaSource();
+    spaSelect.addEventListener('change', () => {
+      setSpaSource(normalizeSpaSource(spaSelect.value));
+    });
+  }
   let statusWrap: HTMLElement | null = null;
   const reportDisplay = document.getElementById('reportDisplay') as HTMLElement;
   const confStrings = () => conferenceStringsFor(resolveStoredLocale());

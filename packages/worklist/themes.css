@@ -1207,6 +1207,17 @@ button {
   line-height: 1.2;
 }
 
+.wl-spa-source {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-right: 4px;
+}
+
+.wl-spa-source .wl-org-select {
+  min-width: 7.5rem;
+}
+
 .wl-segroulette-btn {
   padding: 4px 10px;
   font-size: 12px;

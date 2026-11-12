@@ -109,6 +109,94 @@ export function shouldUseSameOriginHub(
   return isHostedOnCastHub(location) || isRunningInCloud(location);
 }
 
+/** Global SPA URL mode (shared across worklist / classroom / reporting). */
+export const SPA_SOURCE_KEY = 'pw46.hub.spaSource';
+export type SpaSource = 'auto' | 'dev' | 'hub';
+export const SPA_SOURCES: readonly SpaSource[] = ['auto', 'dev', 'hub'];
+
+export function normalizeSpaSource(
+  value: string | null | undefined
+): SpaSource {
+  return SPA_SOURCES.includes(value as SpaSource)
+    ? (value as SpaSource)
+    : 'auto';
+}
+
+/** Read order: ?spa= → localStorage → auto. */
+export function getSpaSource(
+  location: Location = window.location
+): SpaSource {
+  try {
+    const fromQuery = new URL(location.href).searchParams.get('spa');
+    if (fromQuery) return normalizeSpaSource(fromQuery);
+  } catch {
+    /* ignore */
+  }
+  try {
+    return normalizeSpaSource(localStorage.getItem(SPA_SOURCE_KEY));
+  } catch {
+    return 'auto';
+  }
+}
+
+/** Persist preference and keep ?spa= on the current page. */
+export function setSpaSource(
+  next: SpaSource,
+  location: Location = window.location
+): SpaSource {
+  const value = normalizeSpaSource(next);
+  try {
+    localStorage.setItem(SPA_SOURCE_KEY, value);
+  } catch {
+    /* ignore */
+  }
+  try {
+    const url = new URL(location.href);
+    if (value === 'auto') url.searchParams.delete('spa');
+    else url.searchParams.set('spa', value);
+    window.history.replaceState(null, '', url.toString());
+  } catch {
+    /* ignore */
+  }
+  return value;
+}
+
+/** Propagate spa preference onto sibling open URLs (cross-port). */
+export function applySpaParam(url: URL): URL {
+  const spa = getSpaSource();
+  if (spa === 'auto') url.searchParams.delete('spa');
+  else url.searchParams.set('spa', spa);
+  return url;
+}
+
+/** True when viewer URLs should use hub SPA mounts. */
+export function shouldUseHubMountUrls(
+  location: Location = window.location
+): boolean {
+  const spa = getSpaSource(location);
+  if (spa === 'dev') return false;
+  if (spa === 'hub') return true;
+  return shouldUseSameOriginHub(location);
+}
+
+export type ResolveUrlOpts = {
+  hubOrigin?: string | null;
+};
+
+function resolveMountOrigin(
+  location: Location,
+  hubOrigin?: string | null
+): string {
+  const fromArg = String(hubOrigin || '').trim().replace(/\/$/, '');
+  if (fromArg) return fromArg;
+  if (shouldUseSameOriginHub(location)) return location.origin;
+  try {
+    return new URL(HUB_DEFINITIONS.local.hubEndpoint).origin;
+  } catch {
+    return location.origin;
+  }
+}
+
 function sameOriginHubDefinition(
   origin: string,
   label: string
@@ -150,14 +238,15 @@ export const HUB_MIRROR_URL_LOCAL =
 
 export const WORKLIST_URL_LOCAL = 'http://localhost:8140/';
 
-/** Viewer popup URLs for this page (hub mounts when hosted on hub / in cloud). */
+/** Viewer popup URLs (dev ports vs hub mounts; see getSpaSource). */
 export function resolveViewerUrls(
-  location: Location = window.location
+  location: Location = window.location,
+  opts: ResolveUrlOpts = {}
 ): Record<ViewerKind, string> {
-  if (!shouldUseSameOriginHub(location)) {
+  if (!shouldUseHubMountUrls(location)) {
     return { ...VIEWER_URLS_LOCAL };
   }
-  const origin = location.origin;
+  const origin = resolveMountOrigin(location, opts.hubOrigin);
   return {
     ira: `${origin}/slicerlive/`,
     ohif: `${origin}/ohif/viewer/`,
@@ -167,22 +256,24 @@ export function resolveViewerUrls(
 
 /** Worklist client URL (local server or hub SPA mount). */
 export function resolveWorklistUrl(
-  location: Location = window.location
+  location: Location = window.location,
+  opts: ResolveUrlOpts = {}
 ): string {
-  if (!shouldUseSameOriginHub(location)) {
+  if (!shouldUseHubMountUrls(location)) {
     return WORKLIST_URL_LOCAL;
   }
-  return `${location.origin}/worklist-client/`;
+  return `${resolveMountOrigin(location, opts.hubOrigin)}/worklist-client/`;
 }
 
 /** hub-mirror LiveScene stream client URL. */
 export function resolveHubMirrorUrl(
-  location: Location = window.location
+  location: Location = window.location,
+  opts: ResolveUrlOpts = {}
 ): string {
-  if (!shouldUseSameOriginHub(location)) {
+  if (!shouldUseHubMountUrls(location)) {
     return HUB_MIRROR_URL_LOCAL;
   }
-  return `${location.origin}/hub-mirror/`;
+  return `${resolveMountOrigin(location, opts.hubOrigin)}/hub-mirror/`;
 }
 
 export function hubOriginFromEndpoint(hubEndpoint: string): string | null {

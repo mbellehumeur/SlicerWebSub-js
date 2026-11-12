@@ -1129,6 +1129,24 @@ button {
   width: 100%;
 }
 
+.rp-spa-source {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-right: 4px;
+}
+
+.rp-spa-source select {
+  background: var(--rp-surface-2);
+  border: 1px solid var(--rp-border);
+  border-radius: var(--rp-radius);
+  padding: 4px 8px;
+  min-width: 7.5rem;
+  font-size: 12px;
+  line-height: 1.2;
+  color: var(--rp-fg);
+}
+
 .rp-viewer-label {
   margin: 0 2px 0 18px;
   color: #ffffff;

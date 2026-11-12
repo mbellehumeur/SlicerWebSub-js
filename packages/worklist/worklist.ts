@@ -51,6 +51,7 @@ import {
   setStatusListener,
   setViewerButtonsEnabled,
   setWorklistListener,
+  syncClassroomOpenLink,
   type AppState,
 } from './hub';
 import {
@@ -59,8 +60,11 @@ import {
   WORKLIST_ORG_MINE,
   WORKLIST_ORG_TXRV,
   WORKLIST_ORG_FLEXRAY,
+  getSpaSource,
   getStoredUserName,
   isIdcCategoryFilterValue,
+  normalizeSpaSource,
+  setSpaSource,
 } from './config';
 import {
   setStoredTheme,
@@ -204,6 +208,18 @@ async function boot(): Promise<void> {
     state.allStudies,
     loadMyWorklistFromStorage()
   );
+
+  const spaSelect = document.getElementById(
+    'spaSourceSelect'
+  ) as HTMLSelectElement | null;
+  if (spaSelect) {
+    spaSelect.value = getSpaSource();
+    spaSelect.addEventListener('change', () => {
+      setSpaSource(normalizeSpaSource(spaSelect.value));
+      syncClassroomOpenLink(state, state.connection === 'connected');
+    });
+  }
+
   let statusWrap: HTMLElement | null = null;
   const tableBody = document.getElementById('worklistBody') as HTMLElement;
   const emptyRow = document.getElementById('worklistEmpty') as HTMLElement;

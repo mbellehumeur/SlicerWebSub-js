@@ -45,6 +45,7 @@ import {
   clearStoredUserName,
   EMPTY_CAST_CONTEXT,
   fetchHubStartedAt,
+  applySpaParam,
   getHubDefinitions,
   getStoredUserHubOrigin,
   getStoredUserHubStartedAt,
@@ -982,6 +983,10 @@ export function hubEndpoint(state: AppState): string {
   return hubDef(state).hubEndpoint;
 }
 
+function spaResolveOpts(state: AppState): { hubOrigin: string | null } {
+  return { hubOrigin: hubOriginFromEndpoint(hubEndpoint(state)) };
+}
+
 export function hubAdminUrl(state: AppState): string {
   const endpoint = hubEndpoint(state);
   return resolveHubAdminUrl(endpoint) || endpoint;
@@ -1262,7 +1267,9 @@ function openReportingViewer(state: AppState): void {
     return;
   }
 
-  const url = new URL(resolveViewerUrls().reporting);
+  const url = new URL(
+    resolveViewerUrls(undefined, spaResolveOpts(state)).reporting
+  );
   if (state.topic) {
     url.searchParams.set('topic', state.topic);
   }
@@ -1270,6 +1277,7 @@ function openReportingViewer(state: AppState): void {
   if (token) {
     url.searchParams.set('id-token', token);
   }
+  applySpaParam(url);
   const place = reportingPopupPlacement();
   // One open() only — named window reuses an existing hubViewer-reporting if any.
   const win = window.open(
@@ -1306,7 +1314,9 @@ function classroomOpenTarget(): '_blank' | '_self' {
 }
 
 function classroomViewerUrl(state: AppState): URL {
-  const url = new URL(resolveViewerUrls().classroom);
+  const url = new URL(
+    resolveViewerUrls(undefined, spaResolveOpts(state)).classroom
+  );
   if (state.topic) {
     url.searchParams.set('topic', state.topic);
   }
@@ -1314,6 +1324,7 @@ function classroomViewerUrl(state: AppState): URL {
   if (token) {
     url.searchParams.set('id-token', token);
   }
+  applySpaParam(url);
   return url;
 }
 
@@ -1347,7 +1358,7 @@ export function syncClassroomOpenLink(
   link.removeAttribute('tabindex');
   const url = state
     ? classroomViewerUrl(state)
-    : new URL(resolveViewerUrls().classroom);
+    : applySpaParam(new URL(resolveViewerUrls().classroom));
   link.href = url.toString();
   const target = classroomOpenTarget();
   if (target === '_self') {
@@ -1454,7 +1465,7 @@ export function openHubViewer(state: AppState, kind: ViewerKind): boolean {
     openClassroomViewer(state);
     return true;
   }
-  const url = new URL(resolveViewerUrls()[kind]);
+  const url = new URL(resolveViewerUrls(undefined, spaResolveOpts(state))[kind]);
   if (state.topic) {
     url.searchParams.set('topic', state.topic);
   }
@@ -1462,6 +1473,7 @@ export function openHubViewer(state: AppState, kind: ViewerKind): boolean {
   if (token) {
     url.searchParams.set('id-token', token);
   }
+  applySpaParam(url);
   if (kind === 'ira' && state.conference) {
     if (state.conferenceFollowChoice === false) {
       url.searchParams.set('followHost', '0');
@@ -1534,7 +1546,7 @@ export function openHubMirrorViewer(state: AppState): void {
     console.warn(`${LOG_PREFIX} hub-mirror skipped: 3D Slicer not connected`);
     return;
   }
-  const url = new URL(resolveHubMirrorUrl());
+  const url = new URL(resolveHubMirrorUrl(undefined, spaResolveOpts(state)));
   if (state.topic) {
     url.searchParams.set('topic', state.topic);
   }
@@ -1542,6 +1554,7 @@ export function openHubMirrorViewer(state: AppState): void {
   if (token) {
     url.searchParams.set('id-token', token);
   }
+  applySpaParam(url);
   const place = hubMirrorPopupPlacement();
   const win = window.open(
     url.toString(),
@@ -2742,6 +2755,9 @@ export async function autoConnect(state: AppState): Promise<void> {
     const session = client.getSessionConfig();
     if (session.subscriberName) state.subscriberName = session.subscriberName;
     if (session.topic) state.topic = session.topic;
+    if (session.userName && !String(state.userName || '').trim()) {
+      state.userName = String(session.userName).trim();
+    }
     notifyStatus(state);
 
     console.info(`${LOG_PREFIX} auto-connect: subscribe`);

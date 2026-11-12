@@ -125,7 +125,19 @@
 
     <section class="rp-apps" aria-label="Clients and image displays">
       <div class="rp-viewer-btns">
-        <span class="rp-viewer-label rp-viewer-label-first" data-i18n-rp="viewers">Image Displays:</span>
+        <label class="rp-spa-source" title="Open viewers via Auto, local Dev ports, or Hub mounts">
+          <span class="rp-viewer-label rp-viewer-label-first">SPA:</span>
+          <select
+            id="spaSourceSelect"
+            class="rp-spa-select"
+            aria-label="SPA URL source"
+          >
+            <option value="auto">Auto</option>
+            <option value="dev">Dev ports</option>
+            <option value="hub">Hub mounts</option>
+          </select>
+        </label>
+        <span class="rp-viewer-label" data-i18n-rp="viewers">Image Displays:</span>
         <button
           type="button"
           id="openSlicerBtn"

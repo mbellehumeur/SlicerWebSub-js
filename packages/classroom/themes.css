@@ -154,6 +154,20 @@ button {
   background: #fff;
 }
 
+.rp-spa-source {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.rp-spa-source .rp-course-select {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 2px 24px 2px 8px;
+  text-align: left;
+  text-align-last: left;
+}
+
 .rp-visually-hidden {
   position: absolute;
   width: 1px;
