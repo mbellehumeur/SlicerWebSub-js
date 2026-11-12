@@ -287,7 +287,7 @@ export function createHubConferenceDialog(options) {
       const option = document.createElement('option');
       option.value = preset;
       option.textContent = preset;
-      if (preset === 'Tumor Board') option.selected = true;
+      if (preset === 'Anatomy class') option.selected = true;
       titleSelect.appendChild(option);
     }
     const other = document.createElement('option');
@@ -919,7 +919,7 @@ export function createHubConferenceDialog(options) {
     setStatus('', '');
     syncSessionControl();
     if (titleSelect) {
-      titleSelect.value = 'Tumor Board';
+      titleSelect.value = 'Anatomy class';
     }
     if (customTitle) {
       customTitle.value = '';

@@ -15,7 +15,6 @@ JavaScript monorepo for **Slicer WebSub** browser apps and the shared hub client
 | `packages/worklist` | `@slicer-hub/worklist` |
 | `packages/reporting` | `@slicer-hub/reporting` |
 | `packages/classroom` | `@slicer-hub/classroom` |
-| `packages/metaquest` | `@slicer-hub/metaquest` |
 | `packages/ohif-extension` | `@slicer-hub/ohif-extension` |
 
 ## Worklist and Classroom
@@ -55,7 +54,6 @@ Serve an app from the repo root (builds, then serves):
 npm run serve:worklist    # http://127.0.0.1:8140
 npm run serve:reporting   # http://127.0.0.1:8150
 npm run serve:classroom   # http://127.0.0.1:8160
-npm run serve:metaquest   # http://127.0.0.1:8170
 
 # worklist with esbuild watch
 npm run serve:worklist:watch

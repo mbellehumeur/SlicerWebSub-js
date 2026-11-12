@@ -104,7 +104,7 @@ function ConferenceDialog({
   const [followHost, setFollowHost] = useState(() =>
     hubService.getConferenceFollowHost()
   );
-  const [titlePreset, setTitlePreset] = useState('Tumor Board');
+  const [titlePreset, setTitlePreset] = useState('Anatomy class');
   const [customTitle, setCustomTitle] = useState('');
 
   const currentConference = useMemo(

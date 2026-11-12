@@ -11,7 +11,6 @@ const HUB_BINARY_EVENT_PREFIXES = [
   'nrrd',
   'imagingstudy',
   'scene', // scene-update (LiveSync HubBlobs multipart)
-  'glb', // glb-send (MetaQuest mesh snapshots)
 ];
 
 export function isHubBinaryEvent(eventName) {
@@ -142,9 +141,6 @@ export function hasPendingPayload(event) {
 function defaultBinaryBatchFileName(hubEvent, index) {
   const name =
     typeof hubEvent === 'string' ? hubEvent.trim().toLowerCase() : '';
-  if (name.startsWith('glb')) {
-    return index === 0 ? 'scene.glb' : `scene-${index + 1}.glb`;
-  }
   if (name.startsWith('nifti')) {
     return index === 0 ? 'nifti-send.nii.gz' : `nifti-send-${index + 1}.nii.gz`;
   }
@@ -154,9 +150,6 @@ function defaultBinaryBatchFileName(hubEvent, index) {
 function defaultBinaryBatchMimeType(hubEvent) {
   const name =
     typeof hubEvent === 'string' ? hubEvent.trim().toLowerCase() : '';
-  if (name.startsWith('glb')) {
-    return 'model/gltf-binary';
-  }
   if (name.startsWith('nifti')) {
     return 'application/octet-stream';
   }

@@ -41,7 +41,6 @@ import {
   hubEndpoint,
   openHubViewer,
   openHubMirrorViewer,
-  openMetaQuestViewer,
   publishSegrouletteOpen,
   rebindSessionUserName,
   requestStatusFromHostWorklist,
@@ -167,9 +166,6 @@ function wireViewerButtons(state: AppState, onWorklistChanged: () => void): void
   });
   document.getElementById('openHubMirrorBtn')?.addEventListener('click', () => {
     openHubMirrorViewer(state);
-  });
-  document.getElementById('openMetaQuestBtn')?.addEventListener('click', () => {
-    openMetaQuestViewer(state);
   });
   document.getElementById('openSegrouletteBtn')?.addEventListener('click', () => {
     openSegrouletteDialog({
