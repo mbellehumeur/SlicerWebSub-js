@@ -56,7 +56,7 @@ import {
   LOG_PREFIX,
   PATIENT_REFERENCE,
   PRODUCT_NAME,
-  resolveHubMirrorUrl,
+  resolveSlicerMirrorUrl,
   resolveViewerUrls,
   setStoredUserName,
   SUBSCRIBE_EVENTS,
@@ -66,8 +66,8 @@ import {
   VIEWER_OPEN_TITLE_OHIF,
   VIEWER_OPEN_TITLE_SCENEVIEWS,
   VIEWER_OPEN_TITLE_SEGROULETTE,
-  VIEWER_OPEN_TITLE_HUB_MIRROR,
-  VIEWER_OPEN_TITLE_HUB_MIRROR_ACTIVE,
+  VIEWER_OPEN_TITLE_SLICER_MIRROR,
+  VIEWER_OPEN_TITLE_SLICER_MIRROR_ACTIVE,
   VIEWER_OPEN_TITLE_SLICER,
   VIEWER_OPEN_TITLE_SLICER_INACTIVE,
   ViewerKind,
@@ -401,8 +401,8 @@ const CONNECTED_PRODUCT_BUTTONS: Array<{
     match: (p) => matchesHubProduct(p, 'slicer'),
   },
   {
-    id: 'openHubMirrorBtn',
-    match: (p) => matchesHubProduct(p, 'hubMirror'),
+    id: 'openSlicerMirrorBtn',
+    match: (p) => matchesHubProduct(p, 'slicerMirror'),
   },
   {
     // UI label is "DICOM SR"
@@ -629,9 +629,9 @@ function hasConnectedIra(state: AppState): boolean {
   );
 }
 
-function hasConnectedHubMirror(state: AppState): boolean {
+function hasConnectedSlicerMirror(state: AppState): boolean {
   return [...state.connectedApps.values()].some((info) =>
-    matchesHubProduct(info.productName, 'hubMirror')
+    matchesHubProduct(info.productName, 'slicerMirror')
   );
 }
 
@@ -647,15 +647,15 @@ function openSlicerButtonTitle(hubOn: boolean, slicerOn: boolean): string {
   return VIEWER_OPEN_TITLE_SLICER;
 }
 
-function openHubMirrorButtonTitle(
+function openSlicerMirrorButtonTitle(
   hubOn: boolean,
   slicerOn: boolean,
-  hubMirrorOn: boolean
+  slicerMirrorOn: boolean
 ): string {
   if (!hubOn) return VIEWER_OPEN_TITLE_DISABLED;
   if (!slicerOn) return VIEWER_OPEN_TITLE_SLICER_INACTIVE;
-  if (hubMirrorOn) return VIEWER_OPEN_TITLE_HUB_MIRROR_ACTIVE;
-  return VIEWER_OPEN_TITLE_HUB_MIRROR;
+  if (slicerMirrorOn) return VIEWER_OPEN_TITLE_SLICER_MIRROR_ACTIVE;
+  return VIEWER_OPEN_TITLE_SLICER_MIRROR;
 }
 
 function setSlicerDependentViewerButton(
@@ -818,7 +818,7 @@ export function updateConnectedAppButtons(state: AppState): void {
   // Enable when Image Display is connected (same gate for web mirror launch).
   const hubOn = state.connection === 'connected';
   const slicerOn = hasConnectedThreeDSlicer(state);
-  const hubMirrorOn = hasConnectedHubMirror(state);
+  const slicerMirrorOn = hasConnectedSlicerMirror(state);
   const canOpen = hubOn && slicerOn;
   setSlicerDependentViewerButton(
     'openSlicerBtn',
@@ -826,9 +826,9 @@ export function updateConnectedAppButtons(state: AppState): void {
     openSlicerButtonTitle(hubOn, slicerOn)
   );
   setSlicerDependentViewerButton(
-    'openHubMirrorBtn',
+    'openSlicerMirrorBtn',
     canOpen,
-    openHubMirrorButtonTitle(hubOn, slicerOn, hubMirrorOn)
+    openSlicerMirrorButtonTitle(hubOn, slicerOn, slicerMirrorOn)
   );
   syncThreeDSlicerOrgOption(state);
   updateInferenceServerButtons(state);
@@ -1041,7 +1041,7 @@ function iraPopupPlacement(): PopupPlacement {
   return sidePopupPlacement(1280, 810);
 }
 
-function hubMirrorPopupPlacement(): PopupPlacement {
+function slicerMirrorPopupPlacement(): PopupPlacement {
   // Hub Mirror: 30% smaller than the IRA popup.
   return sidePopupPlacement(Math.round(1280 * 0.7), Math.round(810 * 0.7));
 }
@@ -1090,7 +1090,7 @@ const REPORTING_WINDOW_NAME = HUB_REPORTING_WINDOW_NAME;
 const CLASSROOM_WINDOW_NAME = HUB_CLASSROOM_WINDOW_NAME;
 
 let slicerLiveWindow: Window | null = null;
-let hubMirrorWindow: Window | null = null;
+let slicerMirrorWindow: Window | null = null;
 let ohifWindow: Window | null = null;
 let reportingWindow: Window | null = null;
 let classroomWindow: Window | null = null;
@@ -1534,19 +1534,19 @@ export function openHubViewer(state: AppState, kind: ViewerKind): boolean {
 }
 
 /**
- * Open hub-mirror LiveScene stream when 3D Slicer Image Display is connected.
+ * Open slicer-mirror LiveScene stream when 3D Slicer Image Display is connected.
  * LiveSync rides Hub scene-update; bulk via hub ImagingStudy-open payloads.
  */
-export function openHubMirrorViewer(state: AppState): void {
+export function openSlicerMirrorViewer(state: AppState): void {
   if (state.connection !== 'connected' || !state.client) {
-    console.warn(`${LOG_PREFIX} hub-mirror skipped: not connected`);
+    console.warn(`${LOG_PREFIX} slicer-mirror skipped: not connected`);
     return;
   }
   if (!hasConnectedThreeDSlicer(state)) {
-    console.warn(`${LOG_PREFIX} hub-mirror skipped: 3D Slicer not connected`);
+    console.warn(`${LOG_PREFIX} slicer-mirror skipped: 3D Slicer not connected`);
     return;
   }
-  const url = new URL(resolveHubMirrorUrl(undefined, spaResolveOpts(state)));
+  const url = new URL(resolveSlicerMirrorUrl(undefined, spaResolveOpts(state)));
   if (state.topic) {
     url.searchParams.set('topic', state.topic);
   }
@@ -1555,14 +1555,14 @@ export function openHubMirrorViewer(state: AppState): void {
     url.searchParams.set('id-token', token);
   }
   applySpaParam(url);
-  const place = hubMirrorPopupPlacement();
+  const place = slicerMirrorPopupPlacement();
   const win = window.open(
     url.toString(),
-    'hubViewer-hub-mirror',
+    'hubViewer-slicer-mirror',
     popupFeaturesFromPlacement(place)
   );
   if (win) {
-    hubMirrorWindow = win;
+    slicerMirrorWindow = win;
     placePopupWindow(win, place);
   }
 }
@@ -1670,7 +1670,7 @@ export function setViewerButtonsEnabled(
     { id: 'openReportingBtn', title: VIEWER_OPEN_TITLE_REPORTING },
     { id: 'openSt444Btn', title: t('chrome:anatomicalPlanes') },
     { id: 'openSlicerBtn', title: VIEWER_OPEN_TITLE_SLICER },
-    { id: 'openHubMirrorBtn', title: VIEWER_OPEN_TITLE_HUB_MIRROR },
+    { id: 'openSlicerMirrorBtn', title: VIEWER_OPEN_TITLE_SLICER_MIRROR },
     { id: 'openIraBtn', title: VIEWER_OPEN_TITLE_IRA },
     { id: 'openOhifBtn', title: VIEWER_OPEN_TITLE_OHIF },
     { id: 'openSlimBtn', title: 'Slim' },
@@ -1697,7 +1697,7 @@ export function setViewerButtonsEnabled(
     btn.title = title;
   }
   const slicerOn = Boolean(state && hasConnectedThreeDSlicer(state));
-  const hubMirrorOn = Boolean(state && hasConnectedHubMirror(state));
+  const slicerMirrorOn = Boolean(state && hasConnectedSlicerMirror(state));
   const slicerCanOpen = enabled && slicerOn;
   for (const { id, title } of buttons) {
     if (id === 'openSt444Btn') {
@@ -1724,11 +1724,11 @@ export function setViewerButtonsEnabled(
       );
       continue;
     }
-    if (id === 'openHubMirrorBtn') {
+    if (id === 'openSlicerMirrorBtn') {
       setSlicerDependentViewerButton(
         id,
         slicerCanOpen,
-        openHubMirrorButtonTitle(enabled, slicerOn, hubMirrorOn)
+        openSlicerMirrorButtonTitle(enabled, slicerOn, slicerMirrorOn)
       );
       continue;
     }

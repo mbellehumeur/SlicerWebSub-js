@@ -619,7 +619,7 @@ export type CastProductMatcherKind =
   | 'ohif'
   | 'volview'
   | 'slicer'
-  | 'hubMirror'
+  | 'slicerMirror'
   | 'mhub'
   | 'lung'
   | 'totalseg'

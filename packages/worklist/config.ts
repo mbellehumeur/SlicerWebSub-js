@@ -236,9 +236,9 @@ export const VIEWER_OPEN_TITLE_SLICER =
   '3D Slicer Image Display is connected';
 export const VIEWER_OPEN_TITLE_SLICER_INACTIVE =
   '3D Slicer Image Display not connected';
-export const VIEWER_OPEN_TITLE_HUB_MIRROR =
-  'Open 3D Slicer web mirror (hub-mirror LiveScene stream)';
-export const VIEWER_OPEN_TITLE_HUB_MIRROR_ACTIVE =
+export const VIEWER_OPEN_TITLE_SLICER_MIRROR =
+  'Open 3D Slicer web mirror (slicer-mirror LiveScene stream)';
+export const VIEWER_OPEN_TITLE_SLICER_MIRROR_ACTIVE =
   '3D Slicer web mirror is active';
 export const VIEWER_OPEN_TITLE_OHIF = 'Open an OHIF viewer instance';
 export const VIEWER_OPEN_TITLE_SLIM = 'Open a Slim viewer instance';
@@ -256,9 +256,9 @@ const VIEWER_URLS_LOCAL: Record<ViewerKind, string> = {
   slim: 'http://localhost:3001/',
 };
 
-/** Local hub-mirror Four-Up LiveScene client (Hub scene-update + hub payloads). */
-export const HUB_MIRROR_URL_LOCAL =
-  'http://localhost:8130/hub-mirror/hub-mirror.html';
+/** Local slicer-mirror Four-Up LiveScene client (Hub scene-update + hub payloads). */
+export const SLICER_MIRROR_URL_LOCAL =
+  'http://localhost:8130/slicer-mirror/slicer-mirror.html';
 
 /** @deprecated Prefer resolveViewerUrls() — kept for callers that need the local defaults. */
 export const VIEWER_URLS = VIEWER_URLS_LOCAL;
@@ -480,15 +480,15 @@ export function resolveViewerUrls(
   };
 }
 
-/** hub-mirror LiveScene stream client URL. */
-export function resolveHubMirrorUrl(
+/** slicer-mirror LiveScene stream client URL. */
+export function resolveSlicerMirrorUrl(
   location: Location = window.location,
   opts: ResolveUrlOpts = {}
 ): string {
   if (!shouldUseHubMountUrls(location)) {
-    return HUB_MIRROR_URL_LOCAL;
+    return SLICER_MIRROR_URL_LOCAL;
   }
-  return `${resolveMountOrigin(location, opts.hubOrigin)}/hub-mirror/`;
+  return `${resolveMountOrigin(location, opts.hubOrigin)}/slicer-mirror/`;
 }
 
 export function hubOriginFromEndpoint(hubEndpoint: string): string | null {

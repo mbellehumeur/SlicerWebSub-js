@@ -40,7 +40,7 @@ import {
   handleWorklistClose,
   hubEndpoint,
   openHubViewer,
-  openHubMirrorViewer,
+  openSlicerMirrorViewer,
   publishSegrouletteOpen,
   rebindSessionUserName,
   requestStatusFromHostWorklist,
@@ -168,8 +168,8 @@ function wireViewerButtons(state: AppState, onWorklistChanged: () => void): void
   document.getElementById('openSt444Btn')?.addEventListener('click', (ev) => {
     handleClassroomOpenClick(state, ev);
   });
-  document.getElementById('openHubMirrorBtn')?.addEventListener('click', () => {
-    openHubMirrorViewer(state);
+  document.getElementById('openSlicerMirrorBtn')?.addEventListener('click', () => {
+    openSlicerMirrorViewer(state);
   });
   document.getElementById('openSegrouletteBtn')?.addEventListener('click', () => {
     openSegrouletteDialog({

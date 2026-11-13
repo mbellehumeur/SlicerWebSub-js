@@ -229,8 +229,8 @@ const VIEWER_URLS_LOCAL: Record<ViewerKind, string> = {
   slim: 'http://localhost:3001/',
 };
 
-export const HUB_MIRROR_URL_LOCAL =
-  'http://localhost:8130/hub-mirror/hub-mirror.html';
+export const SLICER_MIRROR_URL_LOCAL =
+  'http://localhost:8130/slicer-mirror/slicer-mirror.html';
 
 export const WORKLIST_URL_LOCAL = 'http://localhost:8140/';
 
@@ -261,15 +261,15 @@ export function resolveWorklistUrl(
   return `${resolveMountOrigin(location, opts.hubOrigin)}/worklist-client/`;
 }
 
-/** hub-mirror LiveScene stream client URL. */
-export function resolveHubMirrorUrl(
+/** slicer-mirror LiveScene stream client URL. */
+export function resolveSlicerMirrorUrl(
   location: Location = window.location,
   opts: ResolveUrlOpts = {}
 ): string {
   if (!shouldUseHubMountUrls(location)) {
-    return HUB_MIRROR_URL_LOCAL;
+    return SLICER_MIRROR_URL_LOCAL;
   }
-  return `${resolveMountOrigin(location, opts.hubOrigin)}/hub-mirror/`;
+  return `${resolveMountOrigin(location, opts.hubOrigin)}/slicer-mirror/`;
 }
 
 export function hubOriginFromEndpoint(hubEndpoint: string): string | null {

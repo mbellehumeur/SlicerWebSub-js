@@ -22,9 +22,9 @@ export const HUB_PRODUCT_MATCHERS = Object.freeze({
     p === 'SLICER-HUB' ||
     p.startsWith('3DSLICER') ||
     p.startsWith('SLICER-HUB'),
-  /** hub-mirror Four-Up LiveScene stream client (not desktop Image Display). */
-  hubMirror: (p) =>
-    p === 'SLICERLIVE-HUB-MIRROR' || p.startsWith('SLICERLIVE-HUB-MIRROR'),
+  /** slicer-mirror Four-Up LiveScene stream client (not desktop Image Display). */
+  slicerMirror: (p) =>
+    p === 'SLICER-MIRROR' || p.startsWith('SLICER-MIRROR'),
   mhub: (p) =>
     p === 'MHUB' ||
     p.startsWith('MHUB') ||

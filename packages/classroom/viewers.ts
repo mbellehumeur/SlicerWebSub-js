@@ -24,7 +24,7 @@ import {
 
 const TITLE_DISABLED = 'Subscribe to the hub first';
 const TITLE_SLICER = '3D Slicer Image Display (connect from Slicer)';
-const TITLE_HUB_MIRROR =
+const TITLE_SLICER_MIRROR =
   'SlicerMirror requires a connected 3D Slicer Image Display';
 const TITLE_VOLVIEW = 'VolView (not available from reporting)';
 const TITLE_IRA = 'Open SlicerLive';
@@ -314,9 +314,9 @@ export function setViewerButtonsEnabled(
   const slicer = byId('openSlicerBtn');
   if (slicer) setDisabled(slicer, true, enabled ? TITLE_SLICER : TITLE_DISABLED);
 
-  const hubMirror = byId('openHubMirrorBtn');
-  if (hubMirror) {
-    setDisabled(hubMirror, true, enabled ? TITLE_HUB_MIRROR : TITLE_DISABLED);
+  const slicerMirror = byId('openSlicerMirrorBtn');
+  if (slicerMirror) {
+    setDisabled(slicerMirror, true, enabled ? TITLE_SLICER_MIRROR : TITLE_DISABLED);
   }
 
   const ira = byId('openIraBtn');
