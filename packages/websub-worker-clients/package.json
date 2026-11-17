@@ -1,0 +1,41 @@
+{
+  "name": "@slicer-hub/websub-worker-clients",
+  "version": "0.1.0",
+  "description": "Shared evidence-creator / worker-client UI logic for OHIF and SlicerLive IRA",
+  "type": "module",
+  "license": "BSD-3-Clause",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mbellehumeur/SlicerWebSub-js.git",
+    "directory": "packages/websub-worker-clients"
+  },
+  "files": [
+    "dist",
+    "src"
+  ],
+  "main": "./dist/websub-worker-clients.cjs",
+  "module": "./dist/websub-worker-clients.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/websub-worker-clients.js",
+      "require": "./dist/websub-worker-clients.cjs"
+    },
+    "./package.json": "./package.json"
+  },
+  "sideEffects": false,
+  "scripts": {
+    "build": "vite build && node tools/copy_types.js",
+    "prepublishOnly": "npm run build"
+  },
+  "dependencies": {
+    "@slicer-hub/client": "*"
+  },
+  "devDependencies": {
+    "vite": "^6.3.5"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

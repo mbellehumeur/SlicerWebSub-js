@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
   Label,
@@ -22,6 +23,11 @@ import {
   type CastProductStatusProbe,
   type HubInferenceServerDef,
 } from '@slicer-hub/client';
+import {
+  evidenceCreatorModalityGate,
+  normalizeStudyModality,
+  preferredEvidenceCreatorId,
+} from '@slicer-hub/websub-worker-clients';
 import { useSystem } from '@ohif/core';
 import HubService from '../services/HubService';
 import {
@@ -57,6 +63,8 @@ type EvidenceCreatorsDialogProps = {
   hubService: HubService;
   wsConnected: boolean;
   hasOpenStudy: boolean;
+  /** Active display-set DICOM modality (e.g. CR, DX, CT) for product gates. */
+  studyModality?: string;
 };
 
 /** Scoped styles mirroring IRA Evidence Creators layout. */
@@ -101,6 +109,9 @@ const EC_STYLES = `
 .hub-ec-row.is-selected {
   border-color: hsl(var(--primary));
   background: hsl(var(--primary) / 0.14);
+}
+.hub-ec-row.is-modality-blocked {
+  opacity: 0.72;
 }
 .hub-ec-row-title { font-weight: 700; font-size: 13px; }
 .hub-ec-desc {
@@ -199,6 +210,22 @@ const EC_STYLES = `
   color: hsl(var(--muted-foreground));
 }
 .hub-ec-note:empty { display: none; }
+.hub-ec-disclaimer {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 0;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.4;
+  color: hsl(var(--muted-foreground));
+}
+.hub-ec-disclaimer-icon {
+  flex-shrink: 0;
+  width: 14px;
+  height: 14px;
+  margin-top: 1px;
+}
 .hub-ec-error { margin: 6px 0 0; font-size: 12px; color: #f87171; }
 .hub-ec-totalseg {
   margin: 8px 0;
@@ -254,6 +281,7 @@ function EvidenceCreatorsDialog({
   hubService,
   wsConnected,
   hasOpenStudy,
+  studyModality = '',
 }: EvidenceCreatorsDialogProps) {
   const { servicesManager } = useSystem();
   const taskItems = useMemo(() => taskSelectItems(), []);
@@ -402,6 +430,10 @@ function EvidenceCreatorsDialog({
   const selectedOnline =
     selectedLocalCapable || Boolean(selectedRow?.probe?.online);
   const isFlexray = selectedServer?.id === 'flexray';
+  const modalityNorm = normalizeStudyModality(studyModality);
+  const modalityGate = selectedServer
+    ? evidenceCreatorModalityGate(selectedServer.id, modalityNorm)
+    : { ok: true, reason: '' };
   const selectedFlexrayChoice =
     flexrayChoices.find(c => c.id === flexrayModelId) ??
     flexrayChoices[0] ??
@@ -443,11 +475,15 @@ function EvidenceCreatorsDialog({
     if (!available.length) {
       return;
     }
-    if (selectedId && available.some(row => row.server.id === selectedId)) {
-      return;
+    const nextId = preferredEvidenceCreatorId(
+      available.map(row => row.server.id),
+      modalityNorm,
+      selectedId
+    );
+    if (nextId !== selectedId) {
+      setSelectedId(nextId);
     }
-    setSelectedId(available[0].server.id);
-  }, [open, orderedRows, selectedId]);
+  }, [open, orderedRows, selectedId, modalityNorm]);
 
   useEffect(() => {
     if (!open || !isFlexray) {
@@ -480,6 +516,7 @@ function EvidenceCreatorsDialog({
     hasOpenStudy &&
     !sending &&
     Boolean(selectedServer) &&
+    modalityGate.ok &&
     (isFlexray
       ? true
       : wsConnected && selectedOnline && !probing);
@@ -487,6 +524,7 @@ function EvidenceCreatorsDialog({
   const noteText = (() => {
     if (!selectedServer) return '';
     if (!hasOpenStudy) return 'Open a study to run inference.';
+    if (!modalityGate.ok) return modalityGate.reason;
     if (isFlexray) {
       const size = selectedFlexrayChoice
         ? ` First run downloads ${formatFlexrayDownloadSize(selectedFlexrayChoice.size_bytes || 0)}.`
@@ -505,6 +543,7 @@ function EvidenceCreatorsDialog({
   const runTooltip = (() => {
     if (sending) return isFlexray ? 'Running FleXray locally…' : 'Sending study URLs…';
     if (!hasOpenStudy) return 'Open a study first';
+    if (!modalityGate.ok) return modalityGate.reason;
     if (isFlexray) return 'Run FleXray locally on the active image';
     if (!wsConnected) return 'Connect to the Slicer WebSub';
     if (probing) return 'Checking server status…';
@@ -514,7 +553,7 @@ function EvidenceCreatorsDialog({
   })();
 
   async function onRun() {
-    if (!canRun || !selectedServer) {
+    if (!canRun || !selectedServer || !modalityGate.ok) {
       return;
     }
     setSending(true);
@@ -631,6 +670,29 @@ function EvidenceCreatorsDialog({
         <style>{EC_STYLES}</style>
         <DialogHeader>
           <DialogTitle>Evidence Creators</DialogTitle>
+          <DialogDescription className="hub-ec-disclaimer">
+            <svg
+              className="hub-ec-disclaimer-icon"
+              viewBox="0 0 16 16"
+              width="14"
+              height="14"
+              aria-hidden="true"
+              focusable="false"
+            >
+              <path
+                fill="#EAB308"
+                d="M8.87 1.5a1 1 0 0 0-1.74 0L.68 13.02A1 1 0 0 0 1.55 14.5h12.9a1 1 0 0 0 .87-1.48L8.87 1.5z"
+              />
+              <path
+                fill="#1c1917"
+                d="M7.25 5.75h1.5v4h-1.5v-4zm0 5h1.5v1.5h-1.5V10.75z"
+              />
+            </svg>
+            <span>
+              Please follow the licensing rules of each organization.
+              All research models are for investigational use only.
+            </span>
+          </DialogDescription>
         </DialogHeader>
 
         <div className="hub-ec-layout">
@@ -653,13 +715,27 @@ function EvidenceCreatorsDialog({
               {orderedRows.map(row => {
                 const selected = row.server.id === selectedId;
                 const { label, online, offlineKnown } = rowAvailability(row);
+                const rowModality = evidenceCreatorModalityGate(
+                  row.server.id,
+                  modalityNorm
+                );
+                const availLabel = rowModality.ok
+                  ? label
+                  : row.server.id === 'flexray'
+                    ? 'Needs CR/DX'
+                    : row.server.id === 'dental'
+                      ? 'Needs CT/CBCT'
+                      : label;
                 return (
                   <button
                     key={row.server.id}
                     type="button"
                     role="option"
                     aria-selected={selected}
-                    className={`hub-ec-row${selected ? ' is-selected' : ''}`}
+                    className={`hub-ec-row${selected ? ' is-selected' : ''}${
+                      rowModality.ok ? '' : ' is-modality-blocked'
+                    }`}
+                    title={rowModality.ok ? undefined : rowModality.reason}
                     onClick={() => setSelectedId(row.server.id)}
                   >
                     <div className="hub-ec-row-title">{row.server.title}</div>
@@ -671,14 +747,14 @@ function EvidenceCreatorsDialog({
                     <div className="hub-ec-row-meta">
                       <span
                         className={`hub-ec-avail${
-                          online
+                          rowModality.ok && online
                             ? ' is-online'
-                            : offlineKnown
+                            : !rowModality.ok || offlineKnown
                               ? ' is-offline'
                               : ''
                         }`}
                       >
-                        {label}
+                        {availLabel}
                       </span>
                       {row.server.location ? (
                         <span className="hub-ec-location">

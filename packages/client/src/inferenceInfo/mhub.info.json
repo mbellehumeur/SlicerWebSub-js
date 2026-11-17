@@ -6,6 +6,9 @@
   "summary": "Medical Imaging Model Hub — peer-reviewed deep learning models via standardized Docker I/O.",
   "githubUrl": "https://github.com/MHubAI/",
   "websiteUrl": "https://mhub.ai",
+  "license": "Apache-2.0",
+  "licenseUrl": "https://www.apache.org/licenses/LICENSE-2.0",
+  "licenseRestriction": "Models may use different licenses; check each model",
   "hubEvent": "dicom-send",
   "enabled": true,
   "iconUrl": "https://github.com/MHubAI.png"

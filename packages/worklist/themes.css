@@ -1214,8 +1214,29 @@ button {
   margin-right: 4px;
 }
 
+.wl-spa-source-menu {
+  display: flex;
+  width: 100%;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 8px 10px;
+  gap: 8px;
+}
+
+.wl-spa-source-menu .wl-viewer-label {
+  margin: 0;
+  color: var(--wl-fg-muted);
+  font-size: 12px;
+  font-weight: 600;
+}
+
 .wl-spa-source .wl-org-select {
   min-width: 7.5rem;
+}
+
+.wl-spa-source-menu .wl-org-select {
+  flex: 1;
+  min-width: 0;
 }
 
 .wl-segroulette-btn {

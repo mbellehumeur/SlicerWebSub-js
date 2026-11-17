@@ -3,14 +3,16 @@
 import {
   DENTAL_SEG_PRODUCT_ALIASES,
   LUNG_SCREENING_PRODUCT_ALIASES,
+  EUCAIM_PRODUCT_ALIASES,
   MHUB_PRODUCT_ALIASES,
   NEURO_SEG_PRODUCT_ALIASES,
   TORCHXRAYVISION_PRODUCT_ALIASES,
+  VOX2SEGLAM_PRODUCT_ALIASES,
 } from './statusProtocol.js';
 import mhubInfo from './inferenceInfo/mhub.info.json';
-import lungInfo from './inferenceInfo/lung_screening.info.json';
+import eucaimInfo from './inferenceInfo/eucaim.info.json';
+import vox2seglamInfo from './inferenceInfo/vox2seglam.info.json';
 import totalsegInfo from './inferenceInfo/total_segmentator.info.json';
-import neuroInfo from './inferenceInfo/neuro_seg.info.json';
 import dentalInfo from './inferenceInfo/dental_segmentator.info.json';
 import txrvInfo from './inferenceInfo/torchxrayvision.info.json';
 import flexrayInfo from './inferenceInfo/flexray.info.json';
@@ -18,10 +20,12 @@ import coffeeCupIconUrl from './assets/buy-me-a-coffee-cup.svg?url';
 
 export {
   DENTAL_SEG_PRODUCT_ALIASES,
+  EUCAIM_PRODUCT_ALIASES,
   LUNG_SCREENING_PRODUCT_ALIASES,
   MHUB_PRODUCT_ALIASES,
   NEURO_SEG_PRODUCT_ALIASES,
   TORCHXRAYVISION_PRODUCT_ALIASES,
+  VOX2SEGLAM_PRODUCT_ALIASES,
 };
 
 /**
@@ -89,7 +93,15 @@ function isEnabledInfo(raw) {
 
 /** @type {readonly HubInferenceServerDef[]} */
 export const HUB_INFERENCE_SERVERS = Object.freeze(
-  [mhubInfo, lungInfo, totalsegInfo, neuroInfo, dentalInfo, txrvInfo, flexrayInfo]
+  [
+    eucaimInfo,
+    vox2seglamInfo,
+    mhubInfo,
+    totalsegInfo,
+    dentalInfo,
+    txrvInfo,
+    flexrayInfo,
+  ]
     .filter(isEnabledInfo)
     .map(normalizeInfo)
 );
@@ -190,6 +202,11 @@ export function renderInferenceServerInfoCardHtml(def) {
         `</svg>` +
         `GitHub` +
         `</a>`
+    );
+  }
+  if (licenseUrl) {
+    parts.push(
+      `<a class="hub-inference-info-link" href="${escapeHtml(licenseUrl)}" target="_blank" rel="noopener noreferrer">License</a>`
     );
   }
   const website = String(def.websiteUrl || '').trim();

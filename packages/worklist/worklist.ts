@@ -60,10 +60,13 @@ import {
   WORKLIST_ORG_MINE,
   WORKLIST_ORG_TXRV,
   WORKLIST_ORG_FLEXRAY,
+  getDefaultViewer,
   getSpaSource,
   getStoredUserName,
   isIdcCategoryFilterValue,
+  normalizeDefaultViewer,
   normalizeSpaSource,
+  setDefaultViewer,
   setSpaSource,
 } from './config';
 import {
@@ -90,6 +93,7 @@ import {
   parseMyWorklistFile,
 } from './samples';
 import {
+  closeMenus,
   renderConferenceRoster,
   renderWorklistContext,
   renderWorklistTable,
@@ -110,8 +114,14 @@ function wireMenus(state: AppState): void {
   const helpBtn = document.getElementById(
     'castHelpBtn'
   ) as HTMLButtonElement | null;
+  const helpMenu = document.getElementById('castHelpMenu') as HTMLElement | null;
   const helpModal = document.getElementById('helpModal') as HTMLElement;
   const helpDialog = helpModal.querySelector('.wl-modal') as HTMLElement | null;
+
+  const closeHelpMenu = () => {
+    if (helpMenu) closeMenus(helpMenu);
+    helpBtn?.setAttribute('aria-expanded', 'false');
+  };
 
   const closeHelpModal = () => {
     helpModal.hidden = true;
@@ -119,6 +129,7 @@ function wireMenus(state: AppState): void {
   };
 
   const openHelpModal = () => {
+    closeHelpMenu();
     showHelp(helpModal);
     placeHubDialogNearAnchor({
       overlay: helpModal,
@@ -129,7 +140,25 @@ function wireMenus(state: AppState): void {
     });
   };
 
-  helpBtn?.addEventListener('click', () => {
+  helpBtn?.addEventListener('click', (ev) => {
+    ev.stopPropagation();
+    if (!helpMenu) {
+      openHelpModal();
+      return;
+    }
+    const open = helpMenu.hidden;
+    closeHelpMenu();
+    helpMenu.hidden = !open;
+    helpBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+  });
+
+  document.addEventListener('click', () => {
+    closeHelpMenu();
+  });
+
+  helpMenu?.addEventListener('click', (ev) => ev.stopPropagation());
+
+  document.getElementById('castHelpOpenBtn')?.addEventListener('click', () => {
     openHelpModal();
   });
 
@@ -217,6 +246,16 @@ async function boot(): Promise<void> {
     spaSelect.addEventListener('change', () => {
       setSpaSource(normalizeSpaSource(spaSelect.value));
       syncClassroomOpenLink(state, state.connection === 'connected');
+    });
+  }
+
+  const defaultViewerSelect = document.getElementById(
+    'defaultViewerSelect'
+  ) as HTMLSelectElement | null;
+  if (defaultViewerSelect) {
+    defaultViewerSelect.value = getDefaultViewer();
+    defaultViewerSelect.addEventListener('change', () => {
+      setDefaultViewer(normalizeDefaultViewer(defaultViewerSelect.value));
     });
   }
 

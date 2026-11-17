@@ -397,6 +397,67 @@ export function setSpaSource(
   return value;
 }
 
+/** Default auto-open viewer for CT / MR / PT (OHIF for everything else). */
+export const DEFAULT_VIEWER_KEY = 'pw46.hub.defaultViewer';
+export type DefaultViewer = 'ohif' | 'slicerlive';
+export const DEFAULT_VIEWERS: readonly DefaultViewer[] = [
+  'slicerlive',
+  'ohif',
+];
+
+export function normalizeDefaultViewer(
+  value: string | null | undefined
+): DefaultViewer {
+  const raw = String(value || '')
+    .trim()
+    .toLowerCase();
+  if (raw === 'ira' || raw === 'slicer' || raw === 'slicer-live') {
+    return 'slicerlive';
+  }
+  return DEFAULT_VIEWERS.includes(raw as DefaultViewer)
+    ? (raw as DefaultViewer)
+    : 'slicerlive';
+}
+
+/** Read order: ?viewer= → localStorage → slicerlive. */
+export function getDefaultViewer(
+  location: Location = window.location
+): DefaultViewer {
+  try {
+    const fromQuery = new URL(location.href).searchParams.get('viewer');
+    if (fromQuery) return normalizeDefaultViewer(fromQuery);
+  } catch {
+    /* ignore */
+  }
+  try {
+    return normalizeDefaultViewer(localStorage.getItem(DEFAULT_VIEWER_KEY));
+  } catch {
+    return 'slicerlive';
+  }
+}
+
+/** Persist preference and keep ?viewer= on the current page. */
+export function setDefaultViewer(
+  next: DefaultViewer,
+  location: Location = window.location
+): DefaultViewer {
+  const value = normalizeDefaultViewer(next);
+  try {
+    localStorage.setItem(DEFAULT_VIEWER_KEY, value);
+  } catch {
+    /* ignore */
+  }
+  try {
+    const url = new URL(location.href);
+    if (value === 'slicerlive') url.searchParams.delete('viewer');
+    else url.searchParams.set('viewer', value);
+    window.history.replaceState(null, '', url.toString());
+  } catch {
+    /* ignore */
+  }
+  return value;
+}
+
 /** Propagate spa preference onto sibling open URLs (cross-port). */
 export function applySpaParam(url: URL): URL {
   const spa = getSpaSource();

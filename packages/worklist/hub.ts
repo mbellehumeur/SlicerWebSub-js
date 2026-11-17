@@ -46,6 +46,7 @@ import {
   EMPTY_CAST_CONTEXT,
   fetchHubStartedAt,
   applySpaParam,
+  getDefaultViewer,
   getHubDefinitions,
   getStoredUserHubOrigin,
   getStoredUserHubStartedAt,
@@ -93,6 +94,7 @@ import {
   attachLiveSceneToContext,
   findWorklistSample,
   isDicomwebWorklistSample,
+  isSlicerSceneSample,
   isWorklistSampleActionDisabled,
   addSampleToMyWorklist,
   isSampleInMyWorklist,
@@ -1607,49 +1609,93 @@ export function ensureSlicerLiveViewer(
   return openHubViewer(state, 'ira');
 }
 
-/** Projection radiography — prefer OHIF over SlicerLive after Open. */
-function prefersOhifForModality(modality: unknown): boolean {
+/** CT / MR / PT follow the default-viewer preference; all other modalities use OHIF. */
+function isVolumeModality(modality: unknown): boolean {
   const tokens = Array.isArray(modality) ? modality : [modality];
   return tokens.some((t) => {
-    const m = String(t || '')
+    let m = String(t || '')
       .trim()
       .toUpperCase();
-    return m === 'CR' || m === 'DX';
+    if (m === 'MRI') m = 'MR';
+    if (m === 'PET') m = 'PT';
+    return m === 'CT' || m === 'MR' || m === 'PT';
   });
 }
 
-function samplePrefersOhif(sample: {
+type ViewerSampleHint = {
   modalities?: string[];
   segroulette?: { m?: string };
-}): boolean {
+  organization?: string;
+  scene?: unknown;
+  format?: string;
+};
+
+function sampleModalities(sample: ViewerSampleHint): unknown {
   if (Array.isArray(sample.modalities) && sample.modalities.length) {
-    return prefersOhifForModality(sample.modalities);
+    return sample.modalities;
   }
-  return prefersOhifForModality(sample.segroulette?.m);
+  return sample.segroulette?.m;
 }
 
-/** Open OHIF for CR/DX; otherwise SlicerLive (same rules as ensureSlicerLiveViewer). */
+function sampleIsSlicerScene(sample: ViewerSampleHint): boolean {
+  if (isSlicerSceneSample(sample as WorklistSample)) return true;
+  if (liveSceneDocFromSample(sample as WorklistSample)) return true;
+  const format = String(sample.format || '')
+    .trim()
+    .toLowerCase();
+  return format === 'livescene' || format === 'live scene';
+}
+
+/**
+ * Auto-open after ImagingStudy-open:
+ * Slicer scenes → SlicerLive; CT/MR/PT → defaultViewer preference; else → OHIF.
+ */
 function ensureViewerAfterOpen(
   state: AppState,
-  sampleOrModality:
-    | { modalities?: string[]; segroulette?: { m?: string } }
-    | string
-    | null
-    | undefined,
+  sampleOrModality: ViewerSampleHint | string | null | undefined,
   opts?: { reason?: string }
 ): boolean {
-  const prefersOhif =
-    sampleOrModality && typeof sampleOrModality === 'object'
-      ? samplePrefersOhif(sampleOrModality)
-      : prefersOhifForModality(sampleOrModality);
-  if (prefersOhif) {
-    const reason = opts?.reason || 'open';
+  const reason = opts?.reason || 'open';
+  if (sampleOrModality && typeof sampleOrModality === 'object') {
+    if (sampleIsSlicerScene(sampleOrModality)) {
+      console.info(
+        `${LOG_PREFIX} ensure SlicerLive (${reason}): Slicer scene → IRA only`
+      );
+      return ensureSlicerLiveViewer(state, opts);
+    }
+    if (isVolumeModality(sampleModalities(sampleOrModality))) {
+      if (getDefaultViewer() === 'slicerlive') {
+        console.info(
+          `${LOG_PREFIX} ensure SlicerLive (${reason}): CT/MR/PT + defaultViewer=slicerlive`
+        );
+        return ensureSlicerLiveViewer(state, opts);
+      }
+      console.info(
+        `${LOG_PREFIX} ensure OHIF (${reason}): CT/MR/PT + defaultViewer=ohif`
+      );
+      return openHubViewer(state, 'ohif');
+    }
     console.info(
-      `${LOG_PREFIX} ensure OHIF (${reason}): CR/DX → open OHIF instead of SlicerLive`
+      `${LOG_PREFIX} ensure OHIF (${reason}): non-volume modality → OHIF`
     );
     return openHubViewer(state, 'ohif');
   }
-  return ensureSlicerLiveViewer(state, opts);
+  if (isVolumeModality(sampleOrModality)) {
+    if (getDefaultViewer() === 'slicerlive') {
+      console.info(
+        `${LOG_PREFIX} ensure SlicerLive (${reason}): CT/MR/PT + defaultViewer=slicerlive`
+      );
+      return ensureSlicerLiveViewer(state, opts);
+    }
+    console.info(
+      `${LOG_PREFIX} ensure OHIF (${reason}): CT/MR/PT + defaultViewer=ohif`
+    );
+    return openHubViewer(state, 'ohif');
+  }
+  console.info(
+    `${LOG_PREFIX} ensure OHIF (${reason}): non-volume modality → OHIF`
+  );
+  return openHubViewer(state, 'ohif');
 }
 
 export function setViewerButtonsEnabled(
@@ -2390,7 +2436,7 @@ export async function handleWorklistSampleOpen(
     state.lastImagingStudyOpenContext.length &&
     state.openWorklistSampleId === sampleId
   ) {
-    // Same study already open — still switch to the viewer tab (OHIF for CR/DX).
+    // Same study already open — still switch to the viewer tab.
     const openSample = findWorklistSample(sampleId, state.allStudies);
     ensureViewerAfterOpen(state, openSample, { reason: 'reopen-focus' });
     return;

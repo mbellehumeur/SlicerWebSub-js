@@ -193,6 +193,13 @@ function HubHeaderStatus() {
   const hasOpenStudy = activeDisplaySets.some(
     (displaySet: { StudyInstanceUID?: string }) => !!displaySet.StudyInstanceUID?.trim()
   );
+  const studyModality = String(
+    (
+      activeDisplaySets.find(
+        (displaySet: { Modality?: string }) => !!String(displaySet.Modality || '').trim()
+      ) as { Modality?: string } | undefined
+    )?.Modality || ''
+  ).trim();
 
   useEffect(() => {
     if (!hubService) {
@@ -251,6 +258,7 @@ function HubHeaderStatus() {
         hubService={hubService}
         wsConnected={wsConnected}
         hasOpenStudy={hasOpenStudy}
+        studyModality={studyModality}
       />
       <ConferenceDialog
         open={conferenceOpen}

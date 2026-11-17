@@ -6,6 +6,7 @@ import {
 import { parseCollatedRequestResult } from './collatedRequest.js';
 import {
   isDentalSegProduct,
+  isEucaimProduct,
   isFlexrayProduct,
   isLungScreeningProduct,
   isMhubProduct,
@@ -13,6 +14,7 @@ import {
   isStatusPayloadOnline,
   isTorchXrayVisionProduct,
   isTotalSegmentatorProduct,
+  isVox2seglamProduct,
   productNameFromStatusResponseItem,
   statusItemValue,
 } from './statusProtocol.js';
@@ -269,6 +271,8 @@ function productMatchesInferenceServer(productName, server) {
   const found = findInferenceServerByProduct(productName);
   if (found && found.id === server.id) return true;
   if (server.id === 'mhub') return isMhubProduct(productName);
+  if (server.id === 'eucaim') return isEucaimProduct(productName);
+  if (server.id === 'vox2seglam') return isVox2seglamProduct(productName);
   if (server.id === 'totalseg') return isTotalSegmentatorProduct(productName);
   if (server.id === 'lung') return isLungScreeningProduct(productName);
   if (server.id === 'neuro') return isNeuroSegProduct(productName);

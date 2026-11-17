@@ -8,6 +8,8 @@
   "websiteUrl": "https://mlmed.org/torchxrayvision/",
   "cite": "Cohen et al., TorchXRayVision: A library of chest X-ray datasets and models, MIDL 2022",
   "citeUrl": "https://arxiv.org/abs/2111.00595",
+  "license": "Apache-2.0",
+  "licenseUrl": "https://www.apache.org/licenses/LICENSE-2.0",
   "hubEvent": "dicom-send",
   "enabled": true
 }

@@ -32,6 +32,20 @@ export const HUB_PRODUCT_MATCHERS = Object.freeze({
     p.startsWith('MHUB_AI') ||
     p === 'MHUBAI' ||
     p.startsWith('MHUBAI'),
+  eucaim: (p) =>
+    p === 'EUCAIM' ||
+    p.startsWith('EUCAIM') ||
+    p === 'NNUNET_EUCAIM' ||
+    p.startsWith('NNUNET_EUCAIM') ||
+    p === 'NNUNET-EUCAIM' ||
+    p.startsWith('NNUNET-EUCAIM'),
+  vox2seglam: (p) =>
+    p === 'VOX2SEGLAM' ||
+    p.startsWith('VOX2SEGLAM') ||
+    p === 'VOX2_SEG_LAM' ||
+    p.startsWith('VOX2_SEG_LAM') ||
+    p === 'VOX2-SEG-LAM' ||
+    p.startsWith('VOX2-SEG-LAM'),
   lung: (p) => p === 'LUNGSCREENING' || p.startsWith('LUNGSCREENING'),
   totalseg: (p) =>
     p === 'TOTALSEG' ||

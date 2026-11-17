@@ -12,6 +12,7 @@
   "dependencies": {
     "@slicer-hub/client": "*",
     "@slicer-hub/conference-ui": "*",
+    "@slicer-hub/websub-worker-clients": "*",
     "i18next": "^26.4.2",
     "@slicer-hub/i18n": "*"
   },

@@ -548,6 +548,8 @@ export const DENTAL_SEG_PRODUCT_ALIASES: readonly string[];
 export const TORCHXRAYVISION_PRODUCT_ALIASES: readonly string[];
 export const FLEXRAY_PRODUCT_ALIASES: readonly string[];
 export const MHUB_PRODUCT_ALIASES: readonly string[];
+export const EUCAIM_PRODUCT_ALIASES: readonly string[];
+export const VOX2SEGLAM_PRODUCT_ALIASES: readonly string[];
 export const BINARY_PLACEHOLDER: string;
 
 export interface HubInferenceServerDef {
@@ -621,11 +623,14 @@ export type CastProductMatcherKind =
   | 'slicer'
   | 'slicerMirror'
   | 'mhub'
+  | 'eucaim'
+  | 'vox2seglam'
   | 'lung'
   | 'totalseg'
   | 'neuro'
   | 'dental'
   | 'txrv'
+  | 'flexray'
   | 'reporting'
   | 'classroom'
   | string;
@@ -932,6 +937,8 @@ export function isDentalSegProduct(name: string): boolean;
 export function isTorchXrayVisionProduct(name: string): boolean;
 export function isFlexrayProduct(name: string): boolean;
 export function isMhubProduct(name: string): boolean;
+export function isEucaimProduct(name: string): boolean;
+export function isVox2seglamProduct(name: string): boolean;
 export function isInferenceProduct(name: string): boolean;
 export function normalizeProductToken(name: string): string;
 export function statusItemValue(items: unknown, key: string): string | undefined;
@@ -955,6 +962,12 @@ export function torchXrayVisionAvailableFromStatusResponses(
   responses: CastRequestResponseItem[]
 ): boolean;
 export function mhubAvailableFromStatusResponses(
+  responses: CastRequestResponseItem[]
+): boolean;
+export function eucaimAvailableFromStatusResponses(
+  responses: CastRequestResponseItem[]
+): boolean;
+export function vox2seglamAvailableFromStatusResponses(
   responses: CastRequestResponseItem[]
 ): boolean;
 export function isStatusRequestDataType(value: unknown): boolean;
@@ -1206,12 +1219,16 @@ declare const HubClientLegacy: {
   isDentalSegProduct: typeof isDentalSegProduct;
   isTorchXrayVisionProduct: typeof isTorchXrayVisionProduct;
   isMhubProduct: typeof isMhubProduct;
+  isEucaimProduct: typeof isEucaimProduct;
+  isVox2seglamProduct: typeof isVox2seglamProduct;
   isInferenceProduct: typeof isInferenceProduct;
   lungScreeningAvailableFromStatusResponses: typeof lungScreeningAvailableFromStatusResponses;
   neuroSegAvailableFromStatusResponses: typeof neuroSegAvailableFromStatusResponses;
   dentalSegAvailableFromStatusResponses: typeof dentalSegAvailableFromStatusResponses;
   torchXrayVisionAvailableFromStatusResponses: typeof torchXrayVisionAvailableFromStatusResponses;
   mhubAvailableFromStatusResponses: typeof mhubAvailableFromStatusResponses;
+  eucaimAvailableFromStatusResponses: typeof eucaimAvailableFromStatusResponses;
+  vox2seglamAvailableFromStatusResponses: typeof vox2seglamAvailableFromStatusResponses;
   normalizeProductToken: typeof normalizeProductToken;
   HUB_INFERENCE_SERVERS: typeof HUB_INFERENCE_SERVERS;
   LOCAL_AI_SERVERS: typeof LOCAL_AI_SERVERS;
@@ -1268,6 +1285,8 @@ declare const HubClientLegacy: {
   DENTAL_SEG_PRODUCT_ALIASES: typeof DENTAL_SEG_PRODUCT_ALIASES;
   TORCHXRAYVISION_PRODUCT_ALIASES: typeof TORCHXRAYVISION_PRODUCT_ALIASES;
   MHUB_PRODUCT_ALIASES: typeof MHUB_PRODUCT_ALIASES;
+  EUCAIM_PRODUCT_ALIASES: typeof EUCAIM_PRODUCT_ALIASES;
+  VOX2SEGLAM_PRODUCT_ALIASES: typeof VOX2SEGLAM_PRODUCT_ALIASES;
   totalSegmentatorAvailableFromStatusResponses: typeof totalSegmentatorAvailableFromStatusResponses;
 };
 

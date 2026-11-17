@@ -26,7 +26,7 @@ import {
   loadHubStudyFilesFromPayloads,
   loadHubStudyFilesFromUrls,
 } from './load-hub-study-files';
-import { hangingProtocolIdFromSlicerPublisher } from './slicer-four-up';
+import { resolveImagingStudyHangingProtocolId } from './slicer-four-up';
 import type { HubEvent } from './types';
 
 type DicomIngestCallbacks = {
@@ -91,8 +91,11 @@ export class ImagingStudyHandler {
       return;
     }
 
-    const hangingProtocolId = hangingProtocolIdFromSlicerPublisher(message);
     const normalizedContext = normalizeImagingStudyContext(event.context);
+    const hangingProtocolId = resolveImagingStudyHangingProtocolId(
+      message,
+      normalizedContext
+    );
     const downloadEntries = collectImagingStudyDownloadEntries(normalizedContext);
     const plan = resolveImagingStudyOpenPlan(normalizedContext);
 

@@ -7,6 +7,8 @@
   "githubUrl": "https://github.com/wasserth/TotalSegmentator",
   "websiteUrl": "https://totalsegmentator.com/",
   "buyMeACoffeeUrl": "https://www.buymeacoffee.com/totalsegmentator",
+  "license": "Apache-2.0",
+  "licenseUrl": "https://www.apache.org/licenses/LICENSE-2.0",
   "hubEvent": "dicom-send",
   "enabled": true,
   "citeUrl": "https://pubs.rsna.org/doi/10.1148/ryai.230024"

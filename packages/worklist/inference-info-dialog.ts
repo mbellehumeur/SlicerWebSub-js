@@ -22,6 +22,13 @@ import {
   mhubContextHintsFromImagingStudy,
   type MhubModelDef,
 } from './mhub-models.ts';
+import {
+  eucaimContextHintsFromImagingStudy,
+  findEucaimModelsForAnatomy,
+  listEucaimModelsForBodyPart,
+  listEucaimModelsForModality,
+  type EucaimModelDef,
+} from './eucaim-models.ts';
 import { findWorklistSample } from './samples';
 
 const INFERENCE_MODAL_ANCHORED = 'wl-modal-backdrop-anchored';
@@ -58,30 +65,10 @@ function findWorklistServer(serverId: string) {
   return INFERENCE_SERVERS.find((s) => s.id === serverId) || null;
 }
 
-function mhubModelRowHtml(model: MhubModelDef): string {
-  const website = String(model.websiteUrl || '').trim();
-  const label = escapeHtml(model.label);
-  const desc = String(model.description || '').trim();
-  const title = desc ? ` title="${escapeHtml(desc)}"` : '';
-  const link = website
-    ? ` <a class="wl-mhub-model-link" href="${escapeHtml(website)}" target="_blank" rel="noopener noreferrer">↗</a>`
-    : '';
-  return (
-    `<li class="wl-mhub-model"${title}>` +
-    `<span class="wl-mhub-model-label">${label}</span>${link}` +
-    `</li>`
-  );
-}
-
-function renderMhubModelsPanelHtml(
+function resolveStudyModalityHints(
   state: AppState | undefined,
-  findQuery: string
-): string {
-  const hints = mhubContextHintsFromImagingStudy(
-    state?.lastImagingStudyOpenContext || []
-  );
-  // Fallback: open worklist sample modalities when context lacks study.modality
-  // (older opens / non-IDC builders).
+  hints: { modality: string; description: string; bodyPart: string }
+): { modality: string; description: string; bodyPart: string } {
   if (!hints.modality && state?.openWorklistSampleId) {
     const sample = findWorklistSample(
       state.openWorklistSampleId,
@@ -99,13 +86,56 @@ function renderMhubModelsPanelHtml(
       hints.modality = 'CT';
     }
   }
+  return hints;
+}
+
+function modelRowHtml(model: MhubModelDef | EucaimModelDef): string {
+  const website = String(model.websiteUrl || '').trim();
+  const label = escapeHtml(model.label);
+  const desc = String(model.description || '').trim();
+  const title = desc ? ` title="${escapeHtml(desc)}"` : '';
+  const link = website
+    ? ` <a class="wl-mhub-model-link" href="${escapeHtml(website)}" target="_blank" rel="noopener noreferrer">↗</a>`
+    : '';
+  return (
+    `<li class="wl-mhub-model"${title}>` +
+    `<span class="wl-mhub-model-label">${label}</span>${link}` +
+    `</li>`
+  );
+}
+
+function renderModelsPanelHtml(opts: {
+  state: AppState | undefined;
+  findQuery: string;
+  productLabel: string;
+  findInputId: string;
+  panelAttr: string;
+  listModels: (modality: string | null) => Array<MhubModelDef | EucaimModelDef>;
+  listForBodyPart: (
+    models: Array<MhubModelDef | EucaimModelDef>,
+    bodyPart: string
+  ) => Array<MhubModelDef | EucaimModelDef>;
+  findByAnatomy: (
+    query: string,
+    models: Array<MhubModelDef | EucaimModelDef>
+  ) => Array<MhubModelDef | EucaimModelDef>;
+  contextHints: (context: unknown[]) => {
+    modality: string;
+    description: string;
+    bodyPart: string;
+  };
+}): string {
+  const hints = resolveStudyModalityHints(
+    opts.state,
+    opts.contextHints(opts.state?.lastImagingStudyOpenContext || [])
+  );
   const modality = hints.modality || '';
-  let models = listMhubModelsForModality(modality || null);
+  let models = opts.listModels(modality || null);
   if (hints.bodyPart) {
-    models = listMhubModelsForBodyPart(models, hints.bodyPart);
+    models = opts.listForBodyPart(models, hints.bodyPart);
   }
-  const q = String(findQuery || '').trim();
-  if (q) models = findMhubModelsForAnatomy(q, models);
+  const q = String(opts.findQuery || '').trim();
+  if (q) models = opts.findByAnatomy(q, models);
 
   const filterBits: string[] = [];
   if (modality) filterBits.push(modality);
@@ -116,26 +146,27 @@ function renderMhubModelsPanelHtml(
   }
   if (q) filterBits.push(`anatomy “${escapeHtml(q)}”`);
 
-  const contextLine = !modality && !hints.description
-    ? `<p class="wl-mhub-context-note">No open study — showing all models. Open a study to filter.</p>`
-    : filterBits.length
-      ? `<p class="wl-mhub-context-note">${models.length} model${models.length === 1 ? '' : 's'} · ${filterBits.join(' · ')}${hints.bodyPart && !q ? ' (from study)' : ''}</p>`
-      : `<p class="wl-mhub-context-note">${models.length} model${models.length === 1 ? '' : 's'}${modality ? ` · ${escapeHtml(modality)}` : ''}</p>`;
+  const contextLine =
+    !modality && !hints.description
+      ? `<p class="wl-mhub-context-note">No open study — showing all models. Open a study to filter.</p>`
+      : filterBits.length
+        ? `<p class="wl-mhub-context-note">${models.length} model${models.length === 1 ? '' : 's'} · ${filterBits.join(' · ')}${hints.bodyPart && !q ? ' (from study)' : ''}</p>`
+        : `<p class="wl-mhub-context-note">${models.length} model${models.length === 1 ? '' : 's'}${modality ? ` · ${escapeHtml(modality)}` : ''}</p>`;
 
   const list =
     models.length === 0
       ? `<p class="wl-mhub-empty">No models match.</p>`
-      : `<ul class="wl-mhub-model-list" aria-label="Applicable MHub models">${models
-          .map(mhubModelRowHtml)
+      : `<ul class="wl-mhub-model-list" aria-label="Applicable ${escapeHtml(opts.productLabel)} models">${models
+          .map(modelRowHtml)
           .join('')}</ul>`;
 
   return (
-    `<div class="wl-mhub-models-panel" data-mhub-models-panel>` +
+    `<div class="wl-mhub-models-panel" ${opts.panelAttr}>` +
     `<div class="wl-mhub-find-row">` +
-    `<label for="wlMhubFind">Find models by anatomy</label>` +
-    `<input type="search" id="wlMhubFind" class="wl-mhub-find" ` +
+    `<label for="${opts.findInputId}">Find models by anatomy</label>` +
+    `<input type="search" id="${opts.findInputId}" class="wl-mhub-find" ` +
     `placeholder="e.g. liver kidney" autocomplete="off" ` +
-    `value="${escapeHtml(q)}" aria-label="Find MHub models by anatomy" />` +
+    `value="${escapeHtml(q)}" aria-label="Find ${escapeHtml(opts.productLabel)} models by anatomy" />` +
     `</div>` +
     contextLine +
     list +
@@ -143,9 +174,46 @@ function renderMhubModelsPanelHtml(
   );
 }
 
+function renderMhubModelsPanelHtml(
+  state: AppState | undefined,
+  findQuery: string
+): string {
+  return renderModelsPanelHtml({
+    state,
+    findQuery,
+    productLabel: 'MHub',
+    findInputId: 'wlMhubFind',
+    panelAttr: 'data-mhub-models-panel',
+    listModels: listMhubModelsForModality,
+    listForBodyPart: listMhubModelsForBodyPart,
+    findByAnatomy: findMhubModelsForAnatomy,
+    contextHints: mhubContextHintsFromImagingStudy,
+  });
+}
+
+function renderEucaimModelsPanelHtml(
+  state: AppState | undefined,
+  findQuery: string
+): string {
+  return renderModelsPanelHtml({
+    state,
+    findQuery,
+    productLabel: 'EUCAIM',
+    findInputId: 'wlEucaimFind',
+    panelAttr: 'data-eucaim-models-panel',
+    listModels: listEucaimModelsForModality,
+    listForBodyPart: listEucaimModelsForBodyPart,
+    findByAnatomy: findEucaimModelsForAnatomy,
+    contextHints: eucaimContextHintsFromImagingStudy,
+  });
+}
+
 let mhubFindWired = false;
 let mhubFindQuery = '';
 let mhubDialogState: AppState | undefined;
+let eucaimFindWired = false;
+let eucaimFindQuery = '';
+let eucaimDialogState: AppState | undefined;
 
 function wireMhubFindOnce(): void {
   if (mhubFindWired) return;
@@ -155,6 +223,17 @@ function wireMhubFindOnce(): void {
     if (!(t instanceof HTMLInputElement) || t.id !== 'wlMhubFind') return;
     mhubFindQuery = String(t.value || '').trim();
     refreshMhubModelsPanel();
+  });
+}
+
+function wireEucaimFindOnce(): void {
+  if (eucaimFindWired) return;
+  eucaimFindWired = true;
+  document.addEventListener('input', (ev) => {
+    const t = ev.target;
+    if (!(t instanceof HTMLInputElement) || t.id !== 'wlEucaimFind') return;
+    eucaimFindQuery = String(t.value || '').trim();
+    refreshEucaimModelsPanel();
   });
 }
 
@@ -172,6 +251,24 @@ function refreshMhubModelsPanel(): void {
   }
 }
 
+function refreshEucaimModelsPanel(): void {
+  const bodyEl = document.getElementById('inferenceInfoBody');
+  if (!bodyEl) return;
+  const panel = bodyEl.querySelector('[data-eucaim-models-panel]');
+  if (!panel) return;
+  panel.outerHTML = renderEucaimModelsPanelHtml(
+    eucaimDialogState,
+    eucaimFindQuery
+  );
+  const input = document.getElementById(
+    'wlEucaimFind'
+  ) as HTMLInputElement | null;
+  if (input) {
+    input.focus();
+    const len = input.value.length;
+    input.setSelectionRange(len, len);
+  }
+}
 export function openInferenceInfoDialog(
   serverId: string,
   state?: AppState,
@@ -190,6 +287,7 @@ export function openInferenceInfoDialog(
     : server.title;
 
   mhubDialogState = state;
+  eucaimDialogState = state;
   const dialog = modal.querySelector(
     '.wl-inference-info-modal'
   ) as HTMLElement | null;
@@ -200,6 +298,14 @@ export function openInferenceInfoDialog(
     bodyEl.innerHTML =
       renderInferenceServerInfoCardHtml(server) +
       renderMhubModelsPanelHtml(state, mhubFindQuery) +
+      renderViewerHintHtml(server.title);
+  } else if (serverId === 'eucaim') {
+    wireEucaimFindOnce();
+    eucaimFindQuery = '';
+    dialog?.classList.add('wl-inference-info-modal-wide');
+    bodyEl.innerHTML =
+      renderInferenceServerInfoCardHtml(server) +
+      renderEucaimModelsPanelHtml(state, eucaimFindQuery) +
       renderViewerHintHtml(server.title);
   } else {
     dialog?.classList.remove('wl-inference-info-modal-wide');

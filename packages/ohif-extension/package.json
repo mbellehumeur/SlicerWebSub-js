@@ -26,6 +26,7 @@
     "@slicer-hub/conference-ui": "*",
     "@slicer-hub/flexray-web": "*",
     "@slicer-hub/i18n": "*",
+    "@slicer-hub/websub-worker-clients": "*",
     "dcmjs": "0.49.4",
     "jszip": "3.10.1"
   }

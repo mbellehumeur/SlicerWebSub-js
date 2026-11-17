@@ -22,9 +22,9 @@ const outDir = path.join(clientRoot, 'src', 'inferenceInfo');
 /** @type {Array<{ name: string, srcRel: string }>} */
 const FILES = [
   { name: 'mhub.info.json', srcRel: path.join('mhub', 'mhub.info.json') },
-  { name: 'lung_screening.info.json', srcRel: path.join('lung_screening', 'lung_screening.info.json') },
+  { name: 'eucaim.info.json', srcRel: path.join('eucaim', 'eucaim.info.json') },
+  { name: 'vox2seglam.info.json', srcRel: path.join('vox2seglam', 'vox2seglam.info.json') },
   { name: 'total_segmentator.info.json', srcRel: path.join('total_segmentator', 'total_segmentator.info.json') },
-  { name: 'neuro_seg.info.json', srcRel: path.join('neuro_seg', 'neuro_seg.info.json') },
   { name: 'dental_segmentator.info.json', srcRel: path.join('dental_segmentator', 'dental_segmentator.info.json') },
   { name: 'torchxrayvision.info.json', srcRel: path.join('torchxrayvision', 'torchxrayvision.info.json') },
   { name: 'flexray.info.json', srcRel: path.join('flexray', 'flexray.info.json') },

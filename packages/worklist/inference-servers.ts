@@ -11,10 +11,10 @@ export type WorklistInferenceServer = HubInferenceServerDef & {
 };
 
 const BUTTON_IDS: Record<string, string> = {
+  eucaim: 'openEucaimBtn',
+  vox2seglam: 'openVox2seglamBtn',
   mhub: 'openMhubBtn',
-  lung: 'openLungScreeningBtn',
   totalseg: 'openTotalSegmentatorBtn',
-  neuro: 'openSubcorticalSegmentationBtn',
   dental: 'openDentalSegmentatorBtn',
   txrv: 'openTorchXrayVisionBtn',
   flexray: 'openFlexRayBtn',

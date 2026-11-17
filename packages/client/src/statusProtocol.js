@@ -34,6 +34,14 @@ export const FLEXRAY_PRODUCT_ALIASES = ['FLEXRAY', 'FLEX_RAY', 'FLEX-RAY'];
 
 export const MHUB_PRODUCT_ALIASES = ['MHUB', 'MHUB_AI', 'MHUBAI'];
 
+export const EUCAIM_PRODUCT_ALIASES = ['EUCAIM', 'NNUNET_EUCAIM', 'NNUNET-EUCAIM'];
+
+export const VOX2SEGLAM_PRODUCT_ALIASES = [
+  'VOX2SEGLAM',
+  'VOX2_SEG_LAM',
+  'VOX2-SEG-LAM',
+];
+
 export function normalizeProductToken(name) {
   return String(name || '')
     .trim()
@@ -81,9 +89,19 @@ export function isMhubProduct(name) {
   return productMatchesAliases(name, MHUB_PRODUCT_ALIASES);
 }
 
+export function isEucaimProduct(name) {
+  return productMatchesAliases(name, EUCAIM_PRODUCT_ALIASES);
+}
+
+export function isVox2seglamProduct(name) {
+  return productMatchesAliases(name, VOX2SEGLAM_PRODUCT_ALIASES);
+}
+
 export function isInferenceProduct(name) {
   return (
     isMhubProduct(name) ||
+    isEucaimProduct(name) ||
+    isVox2seglamProduct(name) ||
     isTotalSegmentatorProduct(name) ||
     isLungScreeningProduct(name) ||
     isNeuroSegProduct(name) ||
@@ -181,6 +199,14 @@ export function torchXrayVisionAvailableFromStatusResponses(responses) {
 
 export function mhubAvailableFromStatusResponses(responses) {
   return productAvailableFromStatusResponses(responses, isMhubProduct);
+}
+
+export function eucaimAvailableFromStatusResponses(responses) {
+  return productAvailableFromStatusResponses(responses, isEucaimProduct);
+}
+
+export function vox2seglamAvailableFromStatusResponses(responses) {
+  return productAvailableFromStatusResponses(responses, isVox2seglamProduct);
 }
 
 export function isStatusRequestDataType(value) {

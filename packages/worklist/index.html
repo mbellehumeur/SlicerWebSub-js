@@ -110,34 +110,62 @@
           </button>
           <ul id="langPickerMenu" class="wl-lang-menu" role="listbox" hidden></ul>
         </div>
-        <button
-          type="button"
-          id="castHelpBtn"
-          class="wl-icon-btn"
-          aria-label="Help"
-          title="Help"
-        >
-          ?
-        </button>
+        <div class="wl-menu-wrap">
+          <button
+            type="button"
+            id="castHelpBtn"
+            class="wl-icon-btn"
+            aria-label="Help"
+            title="Help"
+            aria-haspopup="menu"
+            aria-expanded="false"
+          >
+            ?
+          </button>
+          <div id="castHelpMenu" class="wl-menu" role="menu" hidden>
+            <button
+              type="button"
+              id="castHelpOpenBtn"
+              class="wl-menu-item"
+              role="menuitem"
+            >
+              Help…
+            </button>
+            <div class="wl-menu-sep" role="separator"></div>
+            <label
+              class="wl-spa-source wl-spa-source-menu"
+              title="Open viewers via Auto, local Dev ports, or Hub mounts"
+            >
+              <span class="wl-viewer-label">SPA:</span>
+              <select
+                id="spaSourceSelect"
+                class="wl-org-select"
+                aria-label="SPA URL source"
+              >
+                <option value="auto">Auto</option>
+                <option value="dev">Dev ports</option>
+                <option value="hub">Hub mounts</option>
+              </select>
+            </label>
+          </div>
+        </div>
       </div>
     </header>
 
     <main class="wl-main">
       <section class="wl-apps" aria-label="Clients and viewers">
         <div class="wl-viewer-btns">
-          <label class="wl-spa-source" title="Open viewers via Auto, local Dev ports, or Hub mounts">
-            <span class="wl-viewer-label wl-viewer-label-first">SPA:</span>
+          <label class="wl-spa-source" title="Default viewer for CT / MR / PT studies">
+            <span class="wl-viewer-label wl-viewer-label-first" data-i18n="chrome:viewers">Image Displays:</span>
             <select
-              id="spaSourceSelect"
+              id="defaultViewerSelect"
               class="wl-org-select"
-              aria-label="SPA URL source"
+              aria-label="Default viewer"
             >
-              <option value="auto">Auto</option>
-              <option value="dev">Dev ports</option>
-              <option value="hub">Hub mounts</option>
+              <option value="slicerlive">SlicerLive</option>
+              <option value="ohif">OHIF</option>
             </select>
           </label>
-          <span class="wl-viewer-label" data-i18n="chrome:viewers">Image Displays:</span>
           <button
             type="button"
             id="openOhifBtn"
@@ -225,6 +253,22 @@
           <span class="wl-viewer-label wl-viewer-label-first" data-i18n="chrome:localAi">Evidence Creators:</span>
           <button
             type="button"
+            id="openEucaimBtn"
+            class="wl-viewer-btn"
+            title="EUCAIM nnU-Net"
+          >
+            EUCAIM nnU-Net
+          </button>
+          <button
+            type="button"
+            id="openVox2seglamBtn"
+            class="wl-viewer-btn"
+            title="Vox2SegLAM"
+          >
+            Vox2SegLAM
+          </button>
+          <button
+            type="button"
             id="openFlexRayBtn"
             class="wl-viewer-btn"
             title="FleXray · WebGPU"
@@ -239,22 +283,6 @@
             title="Total Segmentator"
           >
             Total Segmentator
-          </button>
-          <button
-            type="button"
-            id="openSubcorticalSegmentationBtn"
-            class="wl-viewer-btn"
-            title="Subcortical Segmentation"
-          >
-            Subcortical Segmentation
-          </button>
-          <button
-            type="button"
-            id="openLungScreeningBtn"
-            class="wl-viewer-btn"
-            title="Lung Screening"
-          >
-            Lung Screening
           </button>
           <button
             type="button"
