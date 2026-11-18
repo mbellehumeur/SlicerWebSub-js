@@ -1,5 +1,6 @@
 import {
   deleteHubConference,
+  joinHubConference,
   resolveHubConferenceView,
 } from '@slicer-hub/client';
 import {
@@ -383,16 +384,37 @@ export function createHubConferenceInviteController(options) {
     }
 
     if (choice === 'decline') {
-      await deleteHubConference(
-        session.hubEndpoint || '',
-        hostTopic,
-        session.topic || '',
-        session.accessToken || ''
-      );
+      // Invite-only recipients are not members yet; leave is a no-op if absent.
+      const leaveTopic = String(session.topic || '').trim();
+      if (leaveTopic) {
+        try {
+          await deleteHubConference(
+            session.hubEndpoint || '',
+            hostTopic,
+            leaveTopic,
+            session.accessToken || ''
+          );
+        } catch {
+          // Not a member yet — ignore leave failures on decline.
+        }
+      }
       onFollowChange?.(false);
       onConferenceChange?.(null);
       return;
     }
+
+    // Membership is opt-in: invite notify does not add topics until /join.
+    const joinTopic = String(session.topic || '').trim();
+    if (!joinTopic) {
+      throw new Error('Hub topic is required to join a conference.');
+    }
+    await joinHubConference(
+      session.hubEndpoint || '',
+      hostTopic,
+      joinTopic,
+      session.userName || session.subscriberName || '',
+      session.accessToken || ''
+    );
 
     const followHost = choice === 'join-follow';
     onFollowChange?.(followHost, followHost ? invite : undefined);

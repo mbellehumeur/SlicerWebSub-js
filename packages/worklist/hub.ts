@@ -341,12 +341,17 @@ async function syncConferenceView(state: AppState): Promise<void> {
     setConferenceView(state, null);
     return;
   }
+  const token = state.client?.getConnectionState?.()?.token?.trim() || '';
+  if (!token) {
+    return;
+  }
   try {
     const view = await resolveHubConferenceView(
       hubEndpoint(state),
       state.topic,
       state.subscriberName,
-      state.userName
+      state.userName,
+      token
     );
     setConferenceView(state, view);
   } catch {

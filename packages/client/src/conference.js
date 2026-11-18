@@ -30,9 +30,12 @@ export function conferenceAuthHeaders(accessToken, jsonBody = false) {
     headers['Content-Type'] = 'application/json';
   }
   const token = String(accessToken ?? '').trim();
-  if (token) {
-    headers.Authorization = `Bearer ${token}`;
+  if (!token) {
+    throw new Error(
+      'Hub conference APIs require a Bearer access token (authenticate first)'
+    );
   }
+  headers.Authorization = `Bearer ${token}`;
   return headers;
 }
 

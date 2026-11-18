@@ -25,29 +25,6 @@ export function resolveHubAdminUrl(hubEndpoint) {
   return new URL('admin', hubBase).href;
 }
 
-export function resolveHubConferenceClientUrl(hubEndpoint, opts = {}) {
-  const url = httpUrlFromHubEndpoint(hubEndpoint);
-  if (!url) {
-    return '';
-  }
-  const conferenceUrl = new URL('/api/hub/conference-client', url.origin);
-  const subscriberName = opts.subscriberName?.trim();
-  const topic = opts.topic?.trim();
-  const theme = opts.theme?.trim() || 'volview';
-  const mode = opts.mode?.trim().toLowerCase() === 'light' ? 'light' : 'dark';
-  if (subscriberName) {
-    conferenceUrl.searchParams.set('subscriberName', subscriberName);
-  }
-  if (topic) {
-    conferenceUrl.searchParams.set('topic', topic);
-  }
-  conferenceUrl.searchParams.set('theme', theme);
-  conferenceUrl.searchParams.set('mode', mode);
-  return conferenceUrl.href;
-}
-
-export const HUB_CONFERENCE_POPUP_SIZE = { width: 336, height: 288 };
-
 /** Named window reused by worklist and IRA DICOM SR buttons. */
 export const HUB_REPORTING_WINDOW_NAME = 'hubViewer-reporting';
 

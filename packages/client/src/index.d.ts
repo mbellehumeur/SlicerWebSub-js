@@ -515,7 +515,6 @@ export const HUB_ENVELOPE_ANY: string;
 export const HUB_DEFAULT_SUBSCRIBER_ACTOR: string;
 export const HUB_CONFERENCE_POLL_MS: number;
 export const HUB_CONFERENCE_EXIT_ACK_MS: number;
-export const HUB_CONFERENCE_POPUP_SIZE: { width: number; height: number };
 export const HUB_REPORTING_WINDOW_NAME: string;
 export const HUB_CLASSROOM_WINDOW_NAME: string;
 export const HUB_WORKLIST_WINDOW_NAME: string;
@@ -823,15 +822,6 @@ export const DEFAULT_CAST_PUBLISH_ENVELOPE_FIELDS: CastPublishEnvelopeFields;
 
 export function httpUrlFromHubEndpoint(hubEndpoint: string): URL | null;
 export function resolveHubAdminUrl(hubEndpoint: string): string;
-export function resolveHubConferenceClientUrl(
-  hubEndpoint: string,
-  opts?: {
-    topic?: string;
-    subscriberName?: string;
-    theme?: string;
-    mode?: string;
-  }
-): string;
 export function openCastHubPopup(
   url: string,
   windowName: string,
@@ -1110,7 +1100,6 @@ declare const HubClientLegacy: {
   castMessageHasPendingFilePayloads: typeof castMessageHasPendingFilePayloads;
   HUB_CONFERENCE_EXIT_ACK_MS: typeof HUB_CONFERENCE_EXIT_ACK_MS;
   HUB_CONFERENCE_POLL_MS: typeof HUB_CONFERENCE_POLL_MS;
-  HUB_CONFERENCE_POPUP_SIZE: typeof HUB_CONFERENCE_POPUP_SIZE;
   HUB_REPORTING_WINDOW_NAME: typeof HUB_REPORTING_WINDOW_NAME;
   HUB_CLASSROOM_WINDOW_NAME: typeof HUB_CLASSROOM_WINDOW_NAME;
   HUB_WORKLIST_WINDOW_NAME: typeof HUB_WORKLIST_WINDOW_NAME;
@@ -1140,7 +1129,6 @@ declare const HubClientLegacy: {
   buildCastConferenceView: typeof buildCastConferenceView;
   HUB_CONFERENCE_EXIT_ACK_MS: typeof HUB_CONFERENCE_EXIT_ACK_MS;
   HUB_CONFERENCE_POLL_MS: typeof HUB_CONFERENCE_POLL_MS;
-  HUB_CONFERENCE_POPUP_SIZE: typeof HUB_CONFERENCE_POPUP_SIZE;
   HUB_REPORTING_WINDOW_NAME: typeof HUB_REPORTING_WINDOW_NAME;
   HUB_CLASSROOM_WINDOW_NAME: typeof HUB_CLASSROOM_WINDOW_NAME;
   HUB_WORKLIST_WINDOW_NAME: typeof HUB_WORKLIST_WINDOW_NAME;
@@ -1262,7 +1250,6 @@ declare const HubClientLegacy: {
   productNameFromStatusResponseItem: typeof productNameFromStatusResponseItem;
   REQUEST_SUFFIX: typeof REQUEST_SUFFIX;
   requestEventFor: typeof requestEventFor;
-  resolveHubConferenceClientUrl: typeof resolveHubConferenceClientUrl;
   resolveHubConferenceState: typeof resolveHubConferenceState;
   resolveHubConferenceView: typeof resolveHubConferenceView;
   resolveHubFileMessage: typeof resolveHubFileMessage;
