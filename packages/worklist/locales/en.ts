@@ -118,7 +118,7 @@ export const en = {
         <li class="wl-help-figure">
           <img class="wl-help-img" src="./help-images/image-display-client-connect.png" alt="Image Display Client: hub SLICER-HUB-CLOUD, topic set, Connect, status Connected" width="585" height="127" />
         </li>
-        <li>When connected, the worklist <strong>SlicerDesktop</strong> viewer button lights up, the worklist selector will change to "3D Slicer" and the worklist will display the content of the Slicer DICOM database. Open a study from the list — it loads in desktop Slicer.</li>
+        <li>When connected, the worklist <strong>SlicerDesktop</strong> viewer button lights up and the worklist switches to a dedicated <strong>Slicer DICOM</strong> table (filled via <code>slicerworklist-request</code>). Click a row to load series details (<code>slicerstudyinfo-request</code>). Open a study from the list — it loads in desktop Slicer.</li>
         <li class="wl-help-figure">
           <img class="wl-help-img" src="./help-images/worklist-viewers-slicer-qt.png" alt="Worklist with viewers (SlicerDesktop selected), Evidence Creators, and study list" width="870" height="498" />
         </li>

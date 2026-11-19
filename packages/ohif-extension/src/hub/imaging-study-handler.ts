@@ -17,6 +17,7 @@ import {
 import { applyHubDicomwebRoot } from './apply-hub-dicomweb-root';
 import {
   getHubEventLower,
+  enrichImagingStudyOpenPlanWithSlimIndex,
   normalizeImagingStudyContext,
   resolveImagingStudyOpenPlan,
 } from '@slicer-hub/client';
@@ -97,7 +98,10 @@ export class ImagingStudyHandler {
       normalizedContext
     );
     const downloadEntries = collectImagingStudyDownloadEntries(normalizedContext);
-    const plan = resolveImagingStudyOpenPlan(normalizedContext);
+    // Prefer sync plan when files are already present; otherwise StudyUID → slim index → CRDC.
+    const plan =
+      (await enrichImagingStudyOpenPlanWithSlimIndex(normalizedContext)) ||
+      resolveImagingStudyOpenPlan(normalizedContext);
 
     console.info(`${LOG_PREFIX} imagingstudy-open`, {
       context: normalizedContext,

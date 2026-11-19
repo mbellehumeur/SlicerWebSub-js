@@ -30,6 +30,8 @@ import HubClient, {
   parseCollatedRequestResult,
   placeHubPopupWindow,
   requestHubLiveScene,
+  requestHubSlicerStudyInfo,
+  requestHubSlicerWorklist,
   requestHubStatus,
   requestEventFor,
   resolveHubConferenceView,
@@ -112,7 +114,7 @@ import {
   replaceIdcWsiStudies,
   replaceSlicerSceneStudies,
   replaceSlicerDicomStudies,
-  worklistSamplesFromSlicerStatusStudies,
+  worklistSamplesFromSlicerWorklistStudies,
   segrouletteSampleId,
   upsertSegrouletteSample,
   worklistSampleFiles,
@@ -132,6 +134,15 @@ export type ConnectedAppInfo = {
   productName: string;
   /** IHE / Hub actor from STATUS (e.g. ID). */
   actor: string;
+};
+
+/** Selected Slicer study detail from ``slicerstudyinfo-response``. */
+export type SlicerStudyInfoState = {
+  sampleId: string;
+  studyInstanceUID: string;
+  loading: boolean;
+  error?: string;
+  resource?: Record<string, unknown> | null;
 };
 
 export type AppState = {
@@ -160,10 +171,12 @@ export type AppState = {
   /** Inference product online state from outbound STATUS probe; keyed by server id. */
   inferenceStatus: Map<string, 'online' | 'offline' | 'unknown'>;
   /**
-   * True after STATUS responses included a Slicer ``studies`` array (even empty).
-   * Prevents a second status-request when startup probe already delivered the list.
+   * True after a ``slicerworklist-response`` was applied for the current Slicer peer
+   * (including an empty studies list). Prevents a duplicate fetch on reconnect noise.
    */
-  slicerStudiesFromStatus: boolean;
+  slicerWorklistFetched: boolean;
+  /** Detail panel state for the selected Slicer DICOM study row. */
+  slicerStudyInfo: SlicerStudyInfoState | null;
 };
 
 export type DomRefs = {
@@ -236,7 +249,8 @@ export function createInitialState(): AppState {
     conferenceFollowChoice: null,
     connectedApps: new Map(),
     inferenceStatus: new Map(),
-    slicerStudiesFromStatus: false,
+    slicerWorklistFetched: false,
+    slicerStudyInfo: null,
   };
 }
 
@@ -445,7 +459,7 @@ function clearConnectedAppRemovalTimers(): void {
 function clearConnectedApps(state: AppState): void {
   clearConnectedAppRemovalTimers();
   const hadSlicer = hasConnectedThreeDSlicer(state);
-  state.slicerStudiesFromStatus = false;
+  state.slicerWorklistFetched = false;
   if (state.connectedApps.size === 0) {
     updateConnectedAppButtons(state);
     if (hadSlicer) onThreeDSlicerDisconnected(state);
@@ -469,7 +483,7 @@ function markConnectedApp(
     actor: messageActor(message),
   });
   if (matchesHubProduct(productName, 'slicer')) {
-    selectThreeDSlicerOrg();
+    enterSlicerWorklistMode(state);
   }
 }
 
@@ -484,6 +498,7 @@ function upsertConnectedApp(
   const actor = String(info.actor || '').trim();
 
   // Reload/reconnect uses a new subscriber name — drop prior peers for same product.
+  let replacedSlicerPeer = false;
   if (productKey) {
     for (const [name, existing] of state.connectedApps) {
       if (
@@ -492,15 +507,26 @@ function upsertConnectedApp(
       ) {
         cancelConnectedAppRemoval(name);
         state.connectedApps.delete(name);
+        if (matchesHubProduct(existing.productName, 'slicer')) {
+          replacedSlicerPeer = true;
+        }
       }
     }
   }
 
   cancelConnectedAppRemoval(subscriber);
+  const isNewSubscriber = !state.connectedApps.has(subscriber);
   state.connectedApps.set(subscriber, {
     productName,
     actor,
   });
+  if (
+    matchesHubProduct(productName, 'slicer') &&
+    (isNewSubscriber || replacedSlicerPeer)
+  ) {
+    state.slicerWorklistFetched = false;
+    state.slicerStudyInfo = null;
+  }
   updateConnectedAppButtons(state);
 }
 
@@ -537,7 +563,7 @@ function applyConnectedAppsFromStatusResponses(
       actor,
     });
     if (matchesHubProduct(resolvedProduct, 'slicer')) {
-      selectThreeDSlicerOrg();
+      enterSlicerWorklistMode(state);
     }
   }
 }
@@ -566,7 +592,7 @@ export function selectDefaultWorklistOrg(): void {
   orgSelect.value = defaultWorklistOrgFilter();
 }
 
-/** Show "3D Slicer" org filter only while SlicerDesktop is connected. */
+/** Show "3D Slicer" org filter only while SlicerDesktop is connected (hidden in slicer mode UI). */
 function syncThreeDSlicerOrgOption(state: AppState): void {
   const orgSelect = document.getElementById(
     'worklistOrgSelect'
@@ -583,45 +609,203 @@ function syncThreeDSlicerOrgOption(state: AppState): void {
   }
 }
 
+export function isSlicerWorklistMode(state: AppState): boolean {
+  return hasConnectedThreeDSlicer(state);
+}
+
+/** Enter dedicated Slicer table mode and fetch study-level rows once. */
+function enterSlicerWorklistMode(state: AppState): void {
+  selectThreeDSlicerOrg();
+  notifyWorklist(state);
+  void fetchSlicerWorklist(state);
+}
+
 /** Drop Slicer DICOM rows and restore the default worklist filter. */
 function onThreeDSlicerDisconnected(state: AppState): void {
-  state.slicerStudiesFromStatus = false;
+  state.slicerWorklistFetched = false;
+  state.slicerStudyInfo = null;
   state.allStudies = replaceSlicerDicomStudies(state.allStudies, []);
   selectDefaultWorklistOrg();
   notifyWorklist(state);
 }
 
-/**
- * Adopt Slicer DICOM worklist rows from STATUS ``data.studies``.
- * Returns true when a Slicer response included the ``studies`` field
- * (including an empty array), so callers can skip a redundant probe.
- */
-function adoptSlicerStudiesFromStatusResponses(
-  state: AppState,
-  responses: Array<Record<string, unknown>>
-): boolean {
-  for (const item of responses) {
+function studiesFromSlicerWorklistResult(result: unknown): unknown[] | null {
+  const requestResult =
+    result && typeof result === 'object'
+      ? (result as { ok?: boolean; data?: unknown })
+      : {};
+  const envelope =
+    requestResult.ok !== false
+      ? parseCollatedRequestResult(requestResult.data)
+      : parseCollatedRequestResult(null);
+  for (const item of envelope.responses) {
     const productName = String(item.productName ?? '').trim();
     const data = item.data;
     if (!data || typeof data !== 'object') continue;
-    const dataObj = data as { product?: unknown; studies?: unknown };
+    const dataObj = data as {
+      source?: unknown;
+      product?: unknown;
+      studies?: unknown;
+    };
     const resolvedProduct =
       productName || String(dataObj.product ?? '').trim();
-    if (!matchesHubProduct(resolvedProduct, 'slicer')) continue;
+    if (
+      !matchesHubProduct(resolvedProduct, 'slicer') &&
+      String(dataObj.source || '').trim().toLowerCase() !== 'slicerworklist'
+    ) {
+      continue;
+    }
     if (!('studies' in dataObj)) continue;
+    return Array.isArray(dataObj.studies) ? dataObj.studies : [];
+  }
+  return null;
+}
 
-    const samples = worklistSamplesFromSlicerStatusStudies(dataObj.studies);
+function imagingStudyResourceFromStudyInfoResult(
+  result: unknown
+): Record<string, unknown> | null {
+  const requestResult =
+    result && typeof result === 'object'
+      ? (result as { ok?: boolean; data?: unknown })
+      : {};
+  const envelope =
+    requestResult.ok !== false
+      ? parseCollatedRequestResult(requestResult.data)
+      : parseCollatedRequestResult(null);
+  for (const item of envelope.responses) {
+    const data = item.data;
+    if (!data || typeof data !== 'object') continue;
+    const dataObj = data as {
+      source?: unknown;
+      'context.type'?: unknown;
+      context?: unknown;
+      ok?: unknown;
+    };
+    if (dataObj.ok === false) continue;
+    const context = dataObj.context;
+    if (!Array.isArray(context)) continue;
+    for (const entry of context) {
+      if (!entry || typeof entry !== 'object') continue;
+      const row = entry as { key?: unknown; resource?: unknown };
+      if (String(row.key || '') !== 'study') continue;
+      if (row.resource && typeof row.resource === 'object') {
+        return row.resource as Record<string, unknown>;
+      }
+    }
+  }
+  return null;
+}
+
+async function fetchSlicerWorklist(state: AppState): Promise<void> {
+  if (state.slicerWorklistFetched) return;
+  if (state.connection !== 'connected') return;
+  if (!hasConnectedThreeDSlicer(state)) return;
+  if (!state.client) return;
+  const subscriber =
+    state.subscriberName ||
+    state.client.getSessionConfig()?.subscriberName?.trim() ||
+    '';
+  if (!subscriber) return;
+
+  try {
+    const result = await requestHubSlicerWorklist(state.client, {
+      subscriberName: subscriber,
+      subscriberProductName: PRODUCT_NAME,
+      subscriberActor: WORKLIST_ACTOR,
+      topic: state.topic || undefined,
+      targetActor: IMAGE_DISPLAY_ACTOR,
+    });
+    if (state.connection !== 'connected' || !hasConnectedThreeDSlicer(state)) {
+      return;
+    }
+    const rows = studiesFromSlicerWorklistResult(result);
+    if (rows === null) {
+      console.warn(`${LOG_PREFIX} slicerworklist: no studies in responses`);
+      // Attempt finished — leave empty table, stop the waiting message.
+      state.slicerWorklistFetched = true;
+      notifyWorklist(state);
+      return;
+    }
+    const samples = worklistSamplesFromSlicerWorklistStudies(rows);
     state.allStudies = replaceSlicerDicomStudies(state.allStudies, samples);
-    state.slicerStudiesFromStatus = true;
+    state.slicerWorklistFetched = true;
     selectThreeDSlicerOrg();
     notifyWorklist(state);
     console.info(
-      `${LOG_PREFIX} STATUS adopted 3D Slicer studies`,
+      `${LOG_PREFIX} slicerworklist adopted studies`,
       `count=${samples.length}`
     );
-    return true;
+  } catch (err) {
+    console.warn(`${LOG_PREFIX} slicerworklist-request failed`, err);
+    if (state.connection === 'connected' && hasConnectedThreeDSlicer(state)) {
+      state.slicerWorklistFetched = true;
+      notifyWorklist(state);
+    }
   }
-  return false;
+}
+
+export async function handleSlicerWorklistRowClick(
+  state: AppState,
+  sampleId: string
+): Promise<void> {
+  const sample = findWorklistSample(sampleId, state.allStudies);
+  const studyInstanceUID = String(sample?.studyInstanceUID || '').trim();
+  if (!sample || !studyInstanceUID) return;
+  if (!state.client || state.connection !== 'connected') return;
+  const subscriber =
+    state.subscriberName ||
+    state.client.getSessionConfig()?.subscriberName?.trim() ||
+    '';
+  if (!subscriber) return;
+
+  state.slicerStudyInfo = {
+    sampleId,
+    studyInstanceUID,
+    loading: true,
+    error: undefined,
+    resource: null,
+  };
+  notifyWorklist(state);
+
+  try {
+    const result = await requestHubSlicerStudyInfo(state.client, {
+      subscriberName: subscriber,
+      subscriberProductName: PRODUCT_NAME,
+      subscriberActor: WORKLIST_ACTOR,
+      topic: state.topic || undefined,
+      targetActor: IMAGE_DISPLAY_ACTOR,
+      studyInstanceUID,
+    });
+    if (state.slicerStudyInfo?.sampleId !== sampleId) return;
+    const resource = imagingStudyResourceFromStudyInfoResult(result);
+    if (!resource) {
+      state.slicerStudyInfo = {
+        sampleId,
+        studyInstanceUID,
+        loading: false,
+        error: 'No study details returned',
+        resource: null,
+      };
+    } else {
+      state.slicerStudyInfo = {
+        sampleId,
+        studyInstanceUID,
+        loading: false,
+        resource,
+      };
+    }
+    notifyWorklist(state);
+  } catch (err) {
+    if (state.slicerStudyInfo?.sampleId !== sampleId) return;
+    state.slicerStudyInfo = {
+      sampleId,
+      studyInstanceUID,
+      loading: false,
+      error: err instanceof Error ? err.message : String(err),
+      resource: null,
+    };
+    notifyWorklist(state);
+  }
 }
 
 function hasConnectedThreeDSlicer(state: AppState): boolean {
@@ -676,13 +860,6 @@ function setSlicerDependentViewerButton(
   if (canOpen) btn.removeAttribute('disabled');
   else btn.setAttribute('disabled', '');
   btn.title = title;
-}
-
-function maybeProbeForSlicerStudies(state: AppState): void {
-  if (state.slicerStudiesFromStatus) return;
-  if (state.connection !== 'connected') return;
-  if (!hasConnectedThreeDSlicer(state)) return;
-  void probeTopicStatus(state);
 }
 
 function applyLocalImagingStudyContext(
@@ -901,7 +1078,6 @@ async function probeTopicStatus(state: AppState): Promise<void> {
     applyConnectedAppsFromStatusResponses(state, envelope.responses);
     updateInferenceServerButtons(state);
     adoptImagingStudyFromStatusResponses(state, envelope.responses);
-    adoptSlicerStudiesFromStatusResponses(state, envelope.responses);
 
     const online = mapped
       .filter((r) => r.probe.online)
@@ -1878,9 +2054,6 @@ function handleIncomingStatusRequest(
   if (String(context.dataType || '').toUpperCase() !== 'STATUS') return false;
 
   markConnectedApp(state, message);
-  // Startup probe already delivered studies → do not send another status-request.
-  // Slicer appearing later (this inbound request) with no studies yet → probe once.
-  maybeProbeForSlicerStudies(state);
 
   state.client?.sendHubRequestResponse(
     correlationId,

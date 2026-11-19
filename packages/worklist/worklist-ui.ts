@@ -5,13 +5,17 @@ import {
 } from '@slicer-hub/conference-ui';
 import type { AppState } from './hub';
 import {
+  handleSlicerWorklistRowClick,
   handleWorklistRowAction,
+  isSlicerWorklistMode,
   shouldShowOpenStartHint,
+  type SlicerStudyInfoState,
 } from './hub';
 import { conferenceStrings, t } from './i18n';
 import {
   filterWorklistStudies,
   isSampleInMyWorklist,
+  isSlicerDicomSample,
   isWorklistSampleActionDisabled,
   worklistSampleActionDisabledReason,
   worklistSampleFormatLabel,
@@ -151,12 +155,232 @@ export function createWorklistStyleActions(
   return inner;
 }
 
+/** Toggle normal org table vs dedicated Slicer DICOM table. */
+export function syncSlicerWorklistModeUi(state: AppState): void {
+  const slicerMode = isSlicerWorklistMode(state);
+  const normal = document.getElementById('worklistNormalPanel');
+  const slicer = document.getElementById('slicerWorklistPanel');
+  const orgSelect = document.getElementById('worklistOrgSelect');
+  const downloadBtn = document.getElementById('downloadWorklistBtn');
+  const uploadBtn = document.getElementById('uploadWorklistBtn');
+  if (normal) (normal as HTMLElement).hidden = slicerMode;
+  if (slicer) (slicer as HTMLElement).hidden = !slicerMode;
+  if (orgSelect) (orgSelect as HTMLElement).hidden = slicerMode;
+  if (downloadBtn) (downloadBtn as HTMLElement).hidden = slicerMode;
+  if (uploadBtn) (uploadBtn as HTMLElement).hidden = slicerMode;
+  const title = document.getElementById('worklistTitle');
+  if (title) {
+    title.textContent = slicerMode ? 'Slicer worklist:' : t('chrome:worklist');
+  }
+}
+
+function buildSlicerWorklistRow(
+  sample: WorklistSample,
+  state: AppState
+): HTMLTableRowElement {
+  const tr = document.createElement('tr');
+  tr.dataset.worklistSampleId = sample.id;
+  const isOpen =
+    Boolean(state.lastImagingStudyOpenContext.length) &&
+    state.openWorklistSampleId === sample.id;
+  const selected =
+    state.slicerStudyInfo?.sampleId === sample.id ||
+    (!state.slicerStudyInfo && isOpen);
+  tr.classList.toggle('is-open', isOpen);
+  tr.classList.toggle('is-selected', Boolean(selected));
+
+  const patient =
+    String(sample.patientName || '').trim() ||
+    String(sample.name || sample.id).trim();
+  const studyDate = String(sample.studyDate || '').trim() || '—';
+  const description = String(sample.description || '').trim() || '—';
+  const modalities = worklistSampleModalitiesLabel(sample);
+  const disabled = isWorklistSampleActionDisabled(sample);
+  const disabledReason = worklistSampleActionDisabledReason(sample);
+
+  tr.innerHTML = `
+    <td>
+      <div class="wl-study-name">${escapeHtml(patient)}</div>
+      <div class="wl-study-desc">${escapeHtml(sample.patientID || sample.studyInstanceUID || '')}</div>
+    </td>
+    <td class="wl-muted">${escapeHtml(studyDate)}</td>
+    <td class="wl-muted">${escapeHtml(description)}</td>
+    <td class="wl-muted">${escapeHtml(modalities)}</td>
+    <td class="wl-row-actions">
+      <div class="wl-row-actions-inner">
+        <button type="button" class="wl-open-btn" data-sample-id="${escapeHtml(
+          sample.id
+        )}"></button>
+      </div>
+    </td>
+  `;
+
+  tr.addEventListener('click', (ev) => {
+    const target = ev.target as HTMLElement | null;
+    if (target?.closest('button')) return;
+    handleSlicerWorklistRowClick(state, sample.id).catch((err) => {
+      console.warn('[@slicer-hub/worklist] slicerstudyinfo failed', err);
+    });
+  });
+
+  const btn = tr.querySelector('.wl-open-btn') as HTMLButtonElement;
+  if (disabled) {
+    btn.disabled = true;
+    btn.textContent = t('chrome:open');
+    btn.title = disabledReason || t('chrome:cannotOpen');
+  } else if (isOpen) {
+    btn.disabled = false;
+    btn.textContent = t('chrome:close');
+    btn.classList.add('is-close');
+    btn.dataset.worklistAction = 'close';
+    btn.title = t('chrome:closeStudy');
+  } else {
+    btn.disabled = false;
+    btn.textContent = t('chrome:open');
+    btn.classList.remove('is-close');
+    btn.dataset.worklistAction = 'open';
+    btn.title = t('chrome:openStudy');
+  }
+  btn.addEventListener('click', (ev) => {
+    ev.stopPropagation();
+    handleWorklistRowAction(
+      state,
+      sample.id,
+      btn.dataset.worklistAction || 'open'
+    );
+  });
+
+  return tr;
+}
+
+export function renderSlicerStudyInfoPanel(
+  info: SlicerStudyInfoState | null | undefined
+): void {
+  const el = document.getElementById('slicerStudyInfo');
+  if (!el) return;
+  if (!info) {
+    el.hidden = true;
+    el.replaceChildren();
+    return;
+  }
+  el.hidden = false;
+  if (info.loading) {
+    el.innerHTML = `<p class="wl-muted">Loading study details…</p>`;
+    return;
+  }
+  if (info.error) {
+    el.innerHTML = `<p class="wl-muted">${escapeHtml(info.error)}</p>`;
+    return;
+  }
+  const resource = info.resource;
+  if (!resource || typeof resource !== 'object') {
+    el.innerHTML = `<p class="wl-muted">No series details.</p>`;
+    return;
+  }
+  const series = Array.isArray(resource.series) ? resource.series : [];
+  const desc = String(resource.description || '').trim();
+  const started = String(resource.started || '').trim();
+  const nSeries = resource.numberOfSeries ?? series.length;
+  const nInstances = resource.numberOfInstances;
+  const headerBits = [
+    desc || 'Study details',
+    started ? `Started ${started}` : '',
+    nSeries != null ? `${nSeries} series` : '',
+    nInstances != null ? `${nInstances} instances` : '',
+  ].filter(Boolean);
+
+  const rows = series
+    .map((entry) => {
+      if (!entry || typeof entry !== 'object') return '';
+      const s = entry as Record<string, unknown>;
+      const modalityCoding = (s.modality as { coding?: Array<{ code?: string }> })
+        ?.coding;
+      const modality =
+        (Array.isArray(modalityCoding) && modalityCoding[0]?.code) ||
+        String((s.modality as { code?: string })?.code || '').trim() ||
+        '—';
+      const number = s.number != null ? String(s.number) : '—';
+      const description = String(s.description || '').trim() || '—';
+      const count =
+        s.numberOfInstances != null
+          ? String(s.numberOfInstances)
+          : Array.isArray(s.instance)
+            ? String(s.instance.length)
+            : '—';
+      const uid = String(s.uid || '').trim();
+      return `<tr>
+        <td class="wl-muted">${escapeHtml(number)}</td>
+        <td>${escapeHtml(modality)}</td>
+        <td>${escapeHtml(description)}</td>
+        <td class="wl-muted">${escapeHtml(count)}</td>
+        <td class="wl-muted wl-slicer-uid">${escapeHtml(uid)}</td>
+      </tr>`;
+    })
+    .join('');
+
+  el.innerHTML = `
+    <div class="wl-slicer-studyinfo-header">${escapeHtml(headerBits.join(' · '))}</div>
+    <table class="wl-table wl-slicer-series-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Modality</th>
+          <th>Series</th>
+          <th>Images</th>
+          <th>Series UID</th>
+        </tr>
+      </thead>
+      <tbody>${rows || `<tr><td colspan="5" class="wl-muted">No series.</td></tr>`}</tbody>
+    </table>
+  `;
+}
+
+export function renderSlicerWorklistTable(state: AppState): void {
+  const tableBody = document.getElementById('slicerWorklistBody');
+  const emptyRow = document.getElementById('slicerWorklistEmpty');
+  if (!tableBody || !emptyRow) return;
+
+  const studies = state.allStudies.filter(isSlicerDicomSample);
+  tableBody.replaceChildren();
+  renderWorklistContext(state);
+  renderSlicerStudyInfoPanel(state.slicerStudyInfo);
+
+  if (!studies.length) {
+    emptyRow.hidden = false;
+    emptyRow.textContent = state.slicerWorklistFetched
+      ? 'No studies in the Slicer DICOM database.'
+      : 'Waiting for Slicer worklist response…';
+    return;
+  }
+  emptyRow.hidden = true;
+
+  const showStartHint = shouldShowOpenStartHint(state);
+  let startHintAssigned = false;
+  for (const sample of studies) {
+    const row = buildSlicerWorklistRow(sample, state);
+    if (showStartHint && !startHintAssigned) {
+      const btn = row.querySelector('.wl-open-btn') as HTMLButtonElement | null;
+      if (btn && !btn.disabled && !btn.classList.contains('is-close')) {
+        btn.classList.add('wl-open-btn-start-hint');
+        startHintAssigned = true;
+      }
+    }
+    tableBody.append(row);
+  }
+}
+
 export function renderWorklistTable(
   tableBody: HTMLElement,
   emptyRow: HTMLElement,
   state: AppState,
   organization: string
 ): void {
+  syncSlicerWorklistModeUi(state);
+  if (isSlicerWorklistMode(state)) {
+    renderSlicerWorklistTable(state);
+    return;
+  }
+
   const studies = sortStudiesBySize(
     filterWorklistStudies(state.allStudies, organization),
     sizeSortDir

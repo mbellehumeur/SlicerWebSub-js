@@ -690,6 +690,33 @@ export function requestHubDicom(
     targetProductName?: string;
   }
 ): Promise<unknown>;
+export function requestHubSlicerWorklist(
+  client: { request: (args: Record<string, unknown>) => Promise<unknown> },
+  opts: {
+    subscriberName: string;
+    subscriberProductName?: string;
+    subscriberActor?: string;
+    topic?: string;
+    targetActor?: string;
+    targetProductName?: string;
+    /** Hub fan-out wait; default 5s (above the snappy STATUS default). */
+    timeoutSeconds?: number;
+  }
+): Promise<unknown>;
+export function requestHubSlicerStudyInfo(
+  client: { request: (args: Record<string, unknown>) => Promise<unknown> },
+  opts: {
+    subscriberName: string;
+    studyInstanceUID: string;
+    subscriberProductName?: string;
+    subscriberActor?: string;
+    topic?: string;
+    targetActor?: string;
+    targetProductName?: string;
+    /** Hub fan-out wait; default 5s (above the snappy STATUS default). */
+    timeoutSeconds?: number;
+  }
+): Promise<unknown>;
 export function requestHubProductStatus(
   client: { request: (args: Record<string, unknown>) => Promise<unknown> },
   opts: {
@@ -831,8 +858,38 @@ export function normalizeImagingStudyContext(context: unknown): unknown;
 export function resolveImagingStudyOpenPlan(
   context: unknown
 ): ImagingStudyOpenPlan | null;
+export function enrichImagingStudyOpenPlanWithSlimIndex(
+  context: unknown,
+  options?: { indexBase?: string; onStatus?: (msg: string) => void }
+): Promise<ImagingStudyOpenPlan | null>;
 export function normalizeStudyUID(value: unknown): string;
 export function extractStudyUIDFromResource(resource: unknown): string;
+
+export const IDC_SLIM_INDEX_DEFAULT_BASE: string;
+export function resolveIdcSeriesFromSlimIndex(args: {
+  studyInstanceUID: string;
+  seriesInstanceUID?: string;
+  indexBase?: string;
+  onStatus?: (msg: string) => void;
+  useMemo?: boolean;
+}): Promise<{
+  crdcSeriesUuid: string;
+  awsBucket: string;
+  studyInstanceUID: string;
+  seriesInstanceUID: string;
+  modality: string;
+  seriesDescription: string;
+  patientId: string;
+  collectionId: string;
+  license: string;
+  segCrdcSeriesUuid?: string;
+  segAwsBucket?: string;
+}>;
+export function clearIdcSlimIndexCache(): void;
+export function idcCrdcPrefixFiles(resolved: {
+  crdcSeriesUuid: string;
+  awsBucket?: string;
+}): Array<{ url: string; fileName: string }>;
 
 export interface HubFilePayloadClient {
   hasPendingPayload?: (message: CastMessage) => boolean;
@@ -1229,6 +1286,8 @@ declare const HubClientLegacy: {
   parseProductStatusProbe: typeof parseProductStatusProbe;
   publishCastUrlSend: typeof publishCastUrlSend;
   requestHubDicom: typeof requestHubDicom;
+  requestHubSlicerWorklist: typeof requestHubSlicerWorklist;
+  requestHubSlicerStudyInfo: typeof requestHubSlicerStudyInfo;
   requestHubLiveScene: typeof requestHubLiveScene;
   requestHubProductStatus: typeof requestHubProductStatus;
   requestHubStatus: typeof requestHubStatus;

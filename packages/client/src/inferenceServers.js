@@ -94,13 +94,13 @@ function isEnabledInfo(raw) {
 /** @type {readonly HubInferenceServerDef[]} */
 export const HUB_INFERENCE_SERVERS = Object.freeze(
   [
-    eucaimInfo,
     vox2seglamInfo,
     mhubInfo,
     totalsegInfo,
     dentalInfo,
     txrvInfo,
     flexrayInfo,
+    eucaimInfo,
   ]
     .filter(isEnabledInfo)
     .map(normalizeInfo)

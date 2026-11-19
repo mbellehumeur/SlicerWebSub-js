@@ -221,6 +221,106 @@ export async function requestHubDicom(client, opts) {
 }
 
 /**
+ * Ask 3D Slicer Image Display for study-level local DICOM worklist rows.
+ * @param {{ request: (args: Record<string, unknown>) => Promise<unknown> }} client
+ * @param {{
+ *   subscriberName: string,
+ *   subscriberProductName?: string,
+ *   subscriberActor?: string,
+ *   topic?: string,
+ *   targetActor?: string,
+ *   targetProductName?: string,
+ * }} opts
+ */
+export async function requestHubSlicerWorklist(client, opts) {
+  const subscriberName = String(opts?.subscriberName || '').trim();
+  if (!client?.request) {
+    return { ok: false, status: 0, data: { error: 'No Hub client' } };
+  }
+  if (!subscriberName) {
+    return { ok: false, status: 0, data: { error: 'No subscriber name' } };
+  }
+  const topic = String(opts?.topic || '').trim();
+  const subscriberProductName = String(opts?.subscriberProductName || '').trim();
+  const subscriberActor = String(opts?.subscriberActor || '').trim();
+  const targetActor = String(opts?.targetActor || 'ID').trim() || 'ID';
+  const targetProductName = String(opts?.targetProductName || '').trim();
+  const timeoutRaw = Number(opts?.timeoutSeconds);
+  const timeoutSeconds =
+    Number.isFinite(timeoutRaw) && timeoutRaw > 0 ? timeoutRaw : 5;
+  return client.request({
+    'subscriber.name': subscriberName,
+    ...(subscriberProductName
+      ? { 'subscriber.product.name': subscriberProductName }
+      : {}),
+    ...(subscriberActor ? { 'subscriber.actor': subscriberActor } : {}),
+    'target.actor': targetActor,
+    ...(targetProductName ? { 'target.product.name': targetProductName } : {}),
+    event: {
+      'hub.event': requestEventFor('SLICERWORKLIST'),
+      ...(topic ? { 'hub.topic': topic } : {}),
+      context: {
+        dataType: 'SLICERWORKLIST',
+        timeoutSeconds,
+      },
+    },
+  });
+}
+
+/**
+ * Ask 3D Slicer Image Display for a full ImagingStudy for one StudyInstanceUID.
+ * @param {{ request: (args: Record<string, unknown>) => Promise<unknown> }} client
+ * @param {{
+ *   subscriberName: string,
+ *   studyInstanceUID: string,
+ *   subscriberProductName?: string,
+ *   subscriberActor?: string,
+ *   topic?: string,
+ *   targetActor?: string,
+ *   targetProductName?: string,
+ * }} opts
+ */
+export async function requestHubSlicerStudyInfo(client, opts) {
+  const subscriberName = String(opts?.subscriberName || '').trim();
+  const studyInstanceUID = String(opts?.studyInstanceUID || '').trim();
+  if (!client?.request) {
+    return { ok: false, status: 0, data: { error: 'No Hub client' } };
+  }
+  if (!subscriberName) {
+    return { ok: false, status: 0, data: { error: 'No subscriber name' } };
+  }
+  if (!studyInstanceUID) {
+    return { ok: false, status: 0, data: { error: 'No studyInstanceUID' } };
+  }
+  const topic = String(opts?.topic || '').trim();
+  const subscriberProductName = String(opts?.subscriberProductName || '').trim();
+  const subscriberActor = String(opts?.subscriberActor || '').trim();
+  const targetActor = String(opts?.targetActor || 'ID').trim() || 'ID';
+  const targetProductName = String(opts?.targetProductName || '').trim();
+  const timeoutRaw = Number(opts?.timeoutSeconds);
+  const timeoutSeconds =
+    Number.isFinite(timeoutRaw) && timeoutRaw > 0 ? timeoutRaw : 5;
+  return client.request({
+    'subscriber.name': subscriberName,
+    ...(subscriberProductName
+      ? { 'subscriber.product.name': subscriberProductName }
+      : {}),
+    ...(subscriberActor ? { 'subscriber.actor': subscriberActor } : {}),
+    'target.actor': targetActor,
+    ...(targetProductName ? { 'target.product.name': targetProductName } : {}),
+    event: {
+      'hub.event': requestEventFor('SLICERSTUDYINFO'),
+      ...(topic ? { 'hub.topic': topic } : {}),
+      context: {
+        dataType: 'SLICERSTUDYINFO',
+        studyInstanceUID,
+        timeoutSeconds,
+      },
+    },
+  });
+}
+
+/**
  * STATUS hub-request targeting one product.
  * @param {{ request: (args: Record<string, unknown>) => Promise<unknown> }} client
  * @param {{

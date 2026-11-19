@@ -1,10 +1,12 @@
 /**
  * Shared View / Add helpers for IDC REST and NL search dialogs.
  */
-import { HUB_OPEN_MODE_IDC } from '@slicer-hub/client';
+import {
+  HUB_OPEN_MODE_IDC,
+  resolveIdcSeriesFromSlimIndex,
+} from '@slicer-hub/client';
 import type { AppState } from './hub';
-import { hubEndpoint, publishIdcRestSeriesOpen } from './hub';
-import { hubOriginFromEndpoint } from './config';
+import { publishIdcRestSeriesOpen } from './hub';
 import {
   nlSeriesToPendingStudy,
   resolveIdcNlWorklistSample,
@@ -172,11 +174,12 @@ export function worklistSampleFromIdcCrdc(
 }
 
 /**
- * Prefer IDC/CRDC worklist rows (IRA-compatible). Fall back to hub/S3
- * per-file dicom-url listing only when CRDC is missing.
+ * Prefer IDC/CRDC worklist rows (IRA-compatible). When CRDC is missing but a
+ * StudyInstanceUID is known, resolve via the slim CORS IDC index → CRDC prefix.
+ * Last resort: browser S3 listing from seriesAwsUrl.
  */
 export async function resolveViaHubOrS3(
-  state: AppState,
+  _state: AppState,
   series: IdcSeriesManifestRow | IdcNlPendingStudy | Record<string, unknown>,
   organization: string,
   index = 1
@@ -192,55 +195,40 @@ export async function resolveViaHubOrS3(
   if (String(pending.crdcSeriesUuid || '').trim()) {
     return worklistSampleFromIdcCrdc(pending, organization, row);
   }
-  const origin = hubOriginFromEndpoint(hubEndpoint(state));
-  if (origin && pending.seriesInstanceUID) {
+
+  const studyUid = String(pending.studyInstanceUID || '').trim();
+  if (studyUid) {
     try {
-      const headers: Record<string, string> = {
-        'Content-Type': 'application/json',
-      };
-      const token = state.client?.getConnectionState?.()?.token?.trim();
-      if (token) headers.Authorization = `Bearer ${token}`;
-      const res = await fetch(`${origin}/api/hub/idc/series-files`, {
-        method: 'POST',
-        headers,
-        body: JSON.stringify({
-          organization,
-          sourceBucket: pending.sourceBucket || 'aws',
-          study: {
-            seriesInstanceUID: pending.seriesInstanceUID,
-            studyInstanceUID: pending.studyInstanceUID,
-            instanceCount: pending.instanceCount,
-            size: pending.size,
-            openMode: 'dicom-url',
-          },
-        }),
+      const resolved = await resolveIdcSeriesFromSlimIndex({
+        studyInstanceUID: studyUid,
+        seriesInstanceUID: pending.seriesInstanceUID || undefined,
       });
-      if (res.ok) {
-        const body = (await res.json()) as {
-          study?: { files?: Array<{ url: string; fileName?: string }> };
-        };
-        const files = body.study?.files;
-        if (files?.length) {
-          return {
-            id: pending.id,
-            name: pending.name,
-            description: pending.description,
-            size: pending.size,
-            format: 'DICOM' as const,
-            organization,
-            studyInstanceUID: pending.studyInstanceUID,
-            seriesInstanceUID: pending.seriesInstanceUID,
-            openMode: 'dicom-url' as const,
-            files: files.map((f) => ({
-              url: f.url,
-              fileName: f.fileName || f.url.split('/').pop() || 'file.dcm',
-            })),
-          };
-        }
-      }
+      const enrichedPending: IdcNlPendingStudy = {
+        ...pending,
+        crdcSeriesUuid: resolved.crdcSeriesUuid,
+        studyInstanceUID: resolved.studyInstanceUID,
+        seriesInstanceUID:
+          resolved.seriesInstanceUID || pending.seriesInstanceUID,
+      };
+      const enrichedRow: IdcSeriesManifestRow = {
+        ...row,
+        StudyInstanceUID: resolved.studyInstanceUID,
+        SeriesInstanceUID: resolved.seriesInstanceUID || row.SeriesInstanceUID,
+        Modality: resolved.modality || row.Modality,
+        SeriesDescription: resolved.seriesDescription || row.SeriesDescription,
+        aws_bucket: resolved.awsBucket,
+        crdc_series_uuid: resolved.crdcSeriesUuid,
+        collection_id: resolved.collectionId || row.collection_id,
+      };
+      return worklistSampleFromIdcCrdc(
+        enrichedPending,
+        organization,
+        enrichedRow
+      );
     } catch {
       // fall through to browser S3 listing
     }
   }
+
   return resolveIdcNlWorklistSample(pending, organization);
 }

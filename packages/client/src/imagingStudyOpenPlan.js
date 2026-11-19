@@ -16,6 +16,10 @@ import {
   extractOpenMode,
   extractVolviewSampleId,
 } from './imagingStudyContext';
+import {
+  idcCrdcPrefixFiles,
+  resolveIdcSeriesFromSlimIndex,
+} from './idcSlimIndex';
 
 /**
  * FHIRcast ImagingStudy-open context is normally an array of { key, resource }.
@@ -163,6 +167,78 @@ export function resolveImagingStudyOpenPlan(context) {
   }
 
   return null;
+}
+
+/**
+ * Like resolveImagingStudyOpenPlan, but when StudyInstanceUID is present without
+ * CRDC prefix files, resolve via the slim CORS IDC index → idc plan with files[].
+ */
+export async function enrichImagingStudyOpenPlanWithSlimIndex(
+  context,
+  options = {}
+) {
+  const plan = resolveImagingStudyOpenPlan(context);
+  if (plan?.mode === 'idc' && plan.files?.length) {
+    return plan;
+  }
+  if (plan?.mode === 'dicom-url' && plan.files?.length) {
+    return plan;
+  }
+  if (plan?.mode === 'files' && plan.files?.length) {
+    return plan;
+  }
+
+  const normalized = normalizeImagingStudyContext(context);
+  const studyInstanceUID = extractDicomStudyUid(normalized);
+  if (!studyInstanceUID) {
+    return plan;
+  }
+
+  // Already have a usable non-idc plan (local-dicom, dicomweb with root, etc.)
+  // Only slim-enrich when we would otherwise rely on bare StudyUID / empty idc files.
+  const needsSlim =
+    !plan ||
+    (plan.mode === 'idc' && !(plan.files && plan.files.length)) ||
+    (plan.mode === 'dicomweb' && !plan.dicomwebRoot && !plan.idcFallback?.files?.length);
+
+  if (!needsSlim) {
+    return plan;
+  }
+
+  try {
+    const resolved = await resolveIdcSeriesFromSlimIndex({
+      studyInstanceUID,
+      seriesInstanceUID:
+        extractIdcSeriesUid(normalized) ||
+        extractDicomSeriesUid(normalized) ||
+        undefined,
+      indexBase: options.indexBase,
+      onStatus: options.onStatus,
+    });
+    const files = idcCrdcPrefixFiles(resolved);
+    if (!files.length) {
+      return plan;
+    }
+    const studyId =
+      extractVolviewSampleId(normalized) || resolved.collectionId || 'study';
+    return {
+      mode: 'idc',
+      studyId,
+      studyInstanceUID: resolved.studyInstanceUID,
+      seriesInstanceUID: resolved.seriesInstanceUID || undefined,
+      sourceBucket: 'aws',
+      files,
+      ohifMode: extractOhifMode(normalized) || plan?.ohifMode || undefined,
+    };
+  } catch (err) {
+    if (typeof console !== 'undefined' && console.warn) {
+      console.warn(
+        '[idcSlimIndex] StudyUID slim resolve failed; keeping sync plan',
+        err
+      );
+    }
+    return plan;
+  }
 }
 
 export function normalizeStudyUID(value) {

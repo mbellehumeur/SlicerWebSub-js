@@ -50,6 +50,10 @@ export type WorklistSample = {
   idcCategory?: string;
   /** e.g. CT, SEG */
   modalities?: string[];
+  /** Slicer DICOM DB patient / study columns (slicerworklist rows). */
+  patientName?: string;
+  patientID?: string;
+  studyDate?: string;
   filename?: string;
   url?: string;
   files?: Array<{
@@ -578,7 +582,7 @@ export function replaceSlicerDicomStudies(
   return [...withoutSlicerDicomSamples(studies), ...slicerSamples];
 }
 
-type SlicerStatusStudyRow = {
+type SlicerWorklistStudyRow = {
   id?: string;
   name?: string;
   description?: string;
@@ -587,17 +591,20 @@ type SlicerStatusStudyRow = {
   organization?: string;
   studyInstanceUID?: string;
   seriesInstanceUID?: string;
+  patientName?: string;
+  patientID?: string;
+  studyDate?: string;
   modalities?: unknown;
   openMode?: string;
 };
 
-/** Map STATUS ``studies`` rows from 3DSLICER-ID into WorklistSample. */
-export function worklistSamplesFromSlicerStatusStudies(
+/** Map ``slicerworklist-response`` ``studies`` rows into WorklistSample. */
+export function worklistSamplesFromSlicerWorklistStudies(
   rows: unknown
 ): WorklistSample[] {
   if (!Array.isArray(rows)) return [];
   const out: WorklistSample[] = [];
-  for (const entry of rows as SlicerStatusStudyRow[]) {
+  for (const entry of rows as SlicerWorklistStudyRow[]) {
     const studyInstanceUID = String(entry?.studyInstanceUID || '').trim();
     const openMode = String(entry?.openMode || '').trim();
     const id =
@@ -621,6 +628,9 @@ export function worklistSamplesFromSlicerStatusStudies(
         'DICOM',
       organization: WORKLIST_ORG_3D_SLICER,
       modalities,
+      patientName: String(entry?.patientName || '').trim() || undefined,
+      patientID: String(entry?.patientID || '').trim() || undefined,
+      studyDate: String(entry?.studyDate || '').trim() || undefined,
       studyInstanceUID: studyInstanceUID || undefined,
       seriesInstanceUID:
         String(entry?.seriesInstanceUID || '').trim() || undefined,
@@ -629,6 +639,10 @@ export function worklistSamplesFromSlicerStatusStudies(
   }
   return out;
 }
+
+/** @deprecated Use worklistSamplesFromSlicerWorklistStudies. */
+export const worklistSamplesFromSlicerStatusStudies =
+  worklistSamplesFromSlicerWorklistStudies;
 
 export function withoutSlicerSceneSamples(
   studies: WorklistSample[]

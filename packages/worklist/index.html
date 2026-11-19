@@ -253,14 +253,6 @@
           <span class="wl-viewer-label wl-viewer-label-first" data-i18n="chrome:localAi">Evidence Creators:</span>
           <button
             type="button"
-            id="openEucaimBtn"
-            class="wl-viewer-btn"
-            title="EUCAIM nnU-Net"
-          >
-            EUCAIM nnU-Net
-          </button>
-          <button
-            type="button"
             id="openVox2seglamBtn"
             class="wl-viewer-btn"
             title="Vox2SegLAM"
@@ -315,6 +307,14 @@
             title="MHub models"
           >
             MHub models
+          </button>
+          <button
+            type="button"
+            id="openEucaimBtn"
+            class="wl-viewer-btn"
+            title="EUCAIM nnU-Net"
+          >
+            EUCAIM nnU-Net
           </button>
         </div>
       </section>
@@ -424,7 +424,7 @@
             </button>
           </div>
         </div>
-        <div class="wl-table-wrap">
+        <div id="worklistNormalPanel" class="wl-table-wrap">
           <table class="wl-table">
             <thead>
               <tr>
@@ -448,6 +448,32 @@
             <tbody id="worklistBody"></tbody>
           </table>
           <div id="worklistEmpty" class="wl-empty" hidden>No studies in this worklist.</div>
+        </div>
+        <div id="slicerWorklistPanel" class="wl-slicer-panel" hidden>
+          <p class="wl-slicer-panel-label">3D Slicer DICOM database</p>
+          <div class="wl-table-wrap">
+            <table class="wl-table wl-slicer-table">
+              <thead>
+                <tr>
+                  <th>Patient</th>
+                  <th>Study date</th>
+                  <th>Description</th>
+                  <th>Modalities</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="slicerWorklistBody"></tbody>
+            </table>
+            <div id="slicerWorklistEmpty" class="wl-empty" hidden>
+              Waiting for Slicer worklist response…
+            </div>
+          </div>
+          <div
+            id="slicerStudyInfo"
+            class="wl-slicer-studyinfo"
+            hidden
+            aria-live="polite"
+          ></div>
         </div>
       </section>
     </main>

@@ -26,6 +26,7 @@ export * from './identity';
 export * from './imagingStudyContext';
 export * from './imagingStudyIdentity.js';
 export * from './imagingStudyOpenPlan';
+export * from './idcSlimIndex';
 export * from './inferenceServers';
 export * from './messageContext';
 export * from './messageLog';
