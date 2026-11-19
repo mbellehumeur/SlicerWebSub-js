@@ -13,9 +13,6 @@ export const en = {
     reportingClients: 'Report Creators:',
     localAi: 'Evidence Creators:',
     remoteAi: 'Evidence Creators:',
-    omiFhir: 'OMI Registry',
-    omiFhirTitle:
-      'Open Medical Inference (OMI) registry for all inference models',
     classroom: 'Classrooms:',
     anatomicalPlanes: 'Classroom',
     currentContext: 'Current context:',

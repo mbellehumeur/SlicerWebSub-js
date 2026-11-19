@@ -234,7 +234,11 @@ export function buildIdcDirectImagingStudyOpenContext(
 }
 
 export function segrouletteSampleId(entry: SegrouletteEntry): string {
-  return `segroulette-${entry.c}`;
+  const c = String(entry.c || '').trim();
+  const s = String(entry.s || '').trim();
+  // Include SEG CRDC so AI vs radiologist variants of the same volume get distinct ids
+  // (Open/Close UI keys off sample id; volume-only ids marked multiple rows open).
+  return s ? `segroulette-${c}-${s}` : `segroulette-${c}`;
 }
 
 export function worklistSampleFromSegrouletteEntry(

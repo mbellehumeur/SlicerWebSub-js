@@ -81,7 +81,6 @@ import {
   closeInferenceInfoDialog,
   wireInferenceInfoButtons,
 } from './inference-info-dialog';
-import { wireOmiFhirDialog } from './omi-fhir-dialog';
 import {
   loadIdcCustomWorklistsFromSession,
   refreshOrgSelectWithCustomWorklists,
@@ -650,7 +649,6 @@ async function boot(): Promise<void> {
   wireMenus(state);
   wireViewerButtons(state, refreshTable);
   wireInferenceInfoButtons(state);
-  wireOmiFhirDialog();
   updateConnectionStatusUi(statusWrap, state);
   setViewerButtonsEnabled(state.connection === 'connected', state);
   refreshTable();

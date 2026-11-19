@@ -269,6 +269,14 @@
           </button>
           <button
             type="button"
+            id="openOrchidOrchestratorBtn"
+            class="wl-viewer-btn"
+            title="Orchid AI orchestrator"
+          >
+            Orchid AI orchestrator
+          </button>
+          <button
+            type="button"
             id="openFlexRayBtn"
             class="wl-viewer-btn"
             title="FleXray · WebGPU"
@@ -307,16 +315,6 @@
             title="MHub models"
           >
             MHub models
-          </button>
-          <button
-            type="button"
-            id="openOmiFhirBtn"
-            class="wl-viewer-btn wl-viewer-btn-end"
-            data-i18n="chrome:omiFhir"
-            data-i18n-title="chrome:omiFhirTitle"
-            title="Open Medical Inference (OMI) registry for all inference models"
-          >
-            OMI Registry
           </button>
         </div>
       </section>
@@ -510,16 +508,6 @@
         <button type="button" class="wl-modal-close" data-close-inference-info aria-label="Close">×</button>
       </div>
       <div id="inferenceInfoBody" class="wl-modal-body wl-inference-info-body"></div>
-    </div>
-  </div>
-
-  <div id="omiFhirModal" class="wl-modal-backdrop" hidden>
-    <div class="wl-modal wl-omi-modal" role="dialog" aria-labelledby="omiFhirTitle">
-      <div class="wl-modal-header">
-        <h2 id="omiFhirTitle">OMI Registry</h2>
-        <button type="button" class="wl-modal-close" data-close-omi-fhir aria-label="Close">×</button>
-      </div>
-      <div id="omiFhirBody" class="wl-modal-body wl-omi-body"></div>
     </div>
   </div>
 

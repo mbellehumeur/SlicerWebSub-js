@@ -415,6 +415,22 @@ async function expandIdcPlanFiles(files: IdcPlanFile[]): Promise<IdcPlanFile[]> 
   return expanded;
 }
 
+/** True when an expanded IDC plan file belongs to the SEG prefix (role/label). */
+function isSegIdcPlanFile(entry: IdcPlanFile): boolean {
+  const role = String(entry.role || '')
+    .trim()
+    .toLowerCase();
+  if (role === 'seg' || role === 'segmentation') {
+    return true;
+  }
+  if (role === 'volume') {
+    return false;
+  }
+  return String(entry.label || '')
+    .trim()
+    .toUpperCase() === 'SEG';
+}
+
 export async function loadHubIdcStudyFiles(
   plan: ImagingStudyIdcOpen,
   callbacks: DicomIngestCallbacks,
@@ -423,9 +439,13 @@ export async function loadHubIdcStudyFiles(
   const studyUIDs = new Set<string>();
   const seriesUIDs = new Set<string>();
   const files = await expandIdcPlanFiles(plan.files || []);
+  // Ingest volume (CT/MR/PT) before SEG so the SEG display set can resolve its
+  // referenced series immediately instead of racing DISPLAY_SETS_ADDED.
+  const volumeFiles = files.filter(entry => !isSegIdcPlanFile(entry));
+  const segFiles = files.filter(entry => isSegIdcPlanFile(entry));
 
   console.info(
-    `${LOG_PREFIX} imagingstudy-open IDC parallel download (${files.length} file(s) after prefix expand, concurrency ${IDC_DOWNLOAD_CONCURRENCY})`,
+    `${LOG_PREFIX} imagingstudy-open IDC phased download (${files.length} file(s) after prefix expand, concurrency ${IDC_DOWNLOAD_CONCURRENCY}; volume=${volumeFiles.length}, seg=${segFiles.length})`,
     {
       studyInstanceUID: plan.studyInstanceUID,
       seriesInstanceUID: plan.seriesInstanceUID,
@@ -441,7 +461,7 @@ export async function loadHubIdcStudyFiles(
     return;
   }
 
-  await mapWithConcurrency(files, IDC_DOWNLOAD_CONCURRENCY, async entry => {
+  const ingestIdcFile = async (entry: IdcPlanFile): Promise<void> => {
     const downloaded = await fetchRemoteFile(entry.url, entry.fileName);
     if (!downloaded || !isLikelyDicomFileName(downloaded.name)) {
       return;
@@ -453,7 +473,10 @@ export async function loadHubIdcStudyFiles(
     if (ingested?.seriesInstanceUID && isLikelyDicomUid(ingested.seriesInstanceUID)) {
       seriesUIDs.add(ingested.seriesInstanceUID);
     }
-  });
+  };
+
+  await mapWithConcurrency(volumeFiles, IDC_DOWNLOAD_CONCURRENCY, ingestIdcFile);
+  await mapWithConcurrency(segFiles, IDC_DOWNLOAD_CONCURRENCY, ingestIdcFile);
 
   const studyList = [...studyUIDs];
   if (!studyList.length) {
