@@ -32,6 +32,7 @@ import {
   ensureCbctDentalLoaded,
   ensureTxrvLoaded,
   ensureFlexrayLoaded,
+  ensureVox2SegLamLoaded,
   ensureIdcSegmentationsLoaded,
   ensureIdcWsiLoaded,
   ensureSlicerLiveViewer,
@@ -60,6 +61,7 @@ import {
   WORKLIST_ORG_MINE,
   WORKLIST_ORG_TXRV,
   WORKLIST_ORG_FLEXRAY,
+  WORKLIST_ORG_VOX2SEGLAM,
   getDefaultViewer,
   getSpaSource,
   getStoredUserName,
@@ -627,6 +629,15 @@ async function boot(): Promise<void> {
           refreshTable();
         });
     }
+    if (orgSelect.value === WORKLIST_ORG_VOX2SEGLAM) {
+      void ensureVox2SegLamLoaded(state, setFooter)
+        .then(() => {
+          refreshTable();
+        })
+        .catch(() => {
+          refreshTable();
+        });
+    }
     if (isIdcCategoryFilterValue(orgSelect.value)) {
       void ensureIdcSegmentationsLoaded(state, setFooter)
         .then(() => {
@@ -678,6 +689,14 @@ async function boot(): Promise<void> {
     });
 
   void ensureFlexrayLoaded(state, setFooter)
+    .then(() => {
+      refreshTable();
+    })
+    .catch(() => {
+      refreshTable();
+    });
+
+  void ensureVox2SegLamLoaded(state, setFooter)
     .then(() => {
       refreshTable();
     })

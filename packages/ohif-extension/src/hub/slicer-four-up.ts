@@ -1,11 +1,15 @@
 import type { CastMessage } from '@slicer-hub/client';
 import { messageSubscriberName } from '@slicer-hub/client';
+import { HUB_SEGMENTATION_MODE_ROUTE } from './resolve-hub-mode-route';
 
 /** OHIF hanging protocol id: axial + volume3d + coronal + sagittal. */
 export const SLICER_FOUR_UP_HANGING_PROTOCOL_ID = 'fourUp';
 
 /** OHIF hanging protocol id: large 3D + three orthogonal MPR slices. */
 export const PRIMARY_3D_HANGING_PROTOCOL_ID = 'primary3D';
+
+/** OHIF hanging protocol id: large axial + coronal/sagittal (Axial Primary). */
+export const PRIMARY_AXIAL_HANGING_PROTOCOL_ID = 'primaryAxial';
 
 /** True when Hub publisher subscriber.name is a 3D Slicer Image Display client. */
 export function isSlicerIdSubscriberName(subscriberName: unknown): boolean {
@@ -66,19 +70,33 @@ export function modalitiesFromImagingStudyContext(
   return codes;
 }
 
-/** CT / MR / PT → primary3D hanging protocol. */
+/** MR → primaryAxial; CT / PT → primary3D. */
 export function hangingProtocolIdForVolumeModalities(
   context: unknown
 ): string | undefined {
   const codes = modalitiesFromImagingStudyContext(context);
-  if (codes.some(m => m === 'CT' || m === 'MR' || m === 'PT')) {
+  if (codes.some(m => m === 'MR')) {
+    return PRIMARY_AXIAL_HANGING_PROTOCOL_ID;
+  }
+  if (codes.some(m => m === 'CT' || m === 'PT')) {
     return PRIMARY_3D_HANGING_PROTOCOL_ID;
   }
   return undefined;
 }
 
+/** MR ImagingStudy context → OHIF segmentation mode route. */
+export function ohifModeForImagingStudyContext(
+  context: unknown
+): string | undefined {
+  const codes = modalitiesFromImagingStudyContext(context);
+  if (codes.some(m => m === 'MR')) {
+    return HUB_SEGMENTATION_MODE_ROUTE;
+  }
+  return undefined;
+}
+
 /**
- * Slicer Image Display publisher → fourUp; else CT/MR/PT context → primary3D.
+ * Slicer Image Display publisher → fourUp; else MR → primaryAxial; CT/PT → primary3D.
  */
 export function resolveImagingStudyHangingProtocolId(
   message: CastMessage | undefined | null,

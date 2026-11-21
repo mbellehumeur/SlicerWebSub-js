@@ -10,7 +10,11 @@ import {
   placeHubDialogNearAnchor,
 } from '@slicer-hub/conference-ui';
 import type { AppState } from './hub';
-import { WORKLIST_ORG_TXRV, WORKLIST_ORG_FLEXRAY } from './config';
+import {
+  WORKLIST_ORG_TXRV,
+  WORKLIST_ORG_FLEXRAY,
+  WORKLIST_ORG_VOX2SEGLAM,
+} from './config';
 import {
   applyInferenceServerButtonVisibility,
   INFERENCE_SERVERS,
@@ -434,7 +438,11 @@ export function wireInferenceInfoButtons(state: AppState): void {
     const btn = document.getElementById(server.worklistButtonId);
     if (!btn) continue;
     btn.addEventListener('click', () => {
-      if (server.id === 'txrv' || server.id === 'flexray') {
+      if (
+        server.id === 'txrv' ||
+        server.id === 'flexray' ||
+        server.id === 'vox2seglam'
+      ) {
         const orgSelect = document.getElementById(
           'worklistOrgSelect'
         ) as HTMLSelectElement | null;
@@ -442,7 +450,9 @@ export function wireInferenceInfoButtons(state: AppState): void {
           orgSelect.value =
             server.id === 'flexray'
               ? WORKLIST_ORG_FLEXRAY
-              : WORKLIST_ORG_TXRV;
+              : server.id === 'vox2seglam'
+                ? WORKLIST_ORG_VOX2SEGLAM
+                : WORKLIST_ORG_TXRV;
           orgSelect.dispatchEvent(new Event('change'));
         }
       }

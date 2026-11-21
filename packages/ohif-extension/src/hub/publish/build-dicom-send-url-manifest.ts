@@ -11,6 +11,8 @@ export type UrlSendFileEntry = {
 export type HubUrlSendManifest = {
   hubEvent: 'dicom-send' | 'nifti-send';
   files: UrlSendFileEntry[];
+  studyInstanceUID?: string;
+  seriesInstanceUID?: string;
 };
 
 /** @deprecated Use ``HubUrlSendManifest`` */
@@ -60,20 +62,40 @@ function niftiFileNameFromUrl(url: string): string {
   return 'nifti-send.nii.gz';
 }
 
-function buildNiftiSendManifest(instances: OhifInstance[]): HubUrlSendManifest {
+function withStudySeriesUids(
+  manifest: HubUrlSendManifest,
+  studyInstanceUID: string,
+  seriesInstanceUID: string
+): HubUrlSendManifest {
+  return {
+    ...manifest,
+    studyInstanceUID: studyInstanceUID.trim() || undefined,
+    seriesInstanceUID: seriesInstanceUID.trim() || undefined,
+  };
+}
+
+function buildNiftiSendManifest(
+  instances: OhifInstance[],
+  studyInstanceUID: string,
+  seriesInstanceUID: string
+): HubUrlSendManifest {
   for (const instance of instances) {
     const sourceUrl = instance._hubSourceUrl?.trim();
     if (sourceUrl && isHttpUrl(sourceUrl) && isNiftiSourceUrl(sourceUrl)) {
-      return {
-        hubEvent: 'nifti-send',
-        files: [
-          {
-            fileName: niftiFileNameFromUrl(sourceUrl),
-            url: sourceUrl,
-            mimeType: 'application/octet-stream',
-          },
-        ],
-      };
+      return withStudySeriesUids(
+        {
+          hubEvent: 'nifti-send',
+          files: [
+            {
+              fileName: niftiFileNameFromUrl(sourceUrl),
+              url: sourceUrl,
+              mimeType: 'application/octet-stream',
+            },
+          ],
+        },
+        studyInstanceUID,
+        seriesInstanceUID
+      );
     }
   }
 
@@ -99,7 +121,7 @@ export function buildHubUrlSendManifest(
     return sourceUrl && isHttpUrl(sourceUrl) && isNiftiSourceUrl(sourceUrl);
   });
   if (niftiCandidate) {
-    return buildNiftiSendManifest(instances);
+    return buildNiftiSendManifest(instances, studyInstanceUID, seriesInstanceUID);
   }
 
   const files: UrlSendFileEntry[] = [];
@@ -135,10 +157,14 @@ export function buildHubUrlSendManifest(
     );
   }
 
-  return {
-    hubEvent: 'dicom-send',
-    files,
-  };
+  return withStudySeriesUids(
+    {
+      hubEvent: 'dicom-send',
+      files,
+    },
+    studyInstanceUID,
+    seriesInstanceUID
+  );
 }
 
 export function buildHubUrlSendManifestFromActiveSeries(servicesManager: {

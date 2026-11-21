@@ -82,6 +82,7 @@ import {
   WORKLIST_ORG_CBCT_DENTAL,
   WORKLIST_ORG_TXRV,
   WORKLIST_ORG_FLEXRAY,
+  WORKLIST_ORG_VOX2SEGLAM,
   WORKLIST_ORG_3D_SLICER,
 } from './config';
 import { appLocaleToOhifLng, resolveStoredLocale } from '@slicer-hub/i18n';
@@ -104,12 +105,14 @@ import {
   loadCbctDentalStudies,
   loadTxrvStudies,
   loadFlexrayStudies,
+  loadVox2SegLamStudies,
   loadIdcSegmentationStudies,
   loadIdcWsiStudies,
   loadSlicerSceneStudies,
   replaceCbctDentalStudies,
   replaceTxrvStudies,
   replaceFlexrayStudies,
+  replaceVox2SegLamStudies,
   replaceIdcSegmentationStudies,
   replaceIdcWsiStudies,
   replaceSlicerSceneStudies,
@@ -967,10 +970,17 @@ function removeConnectedApp(
   cancelConnectedAppRemoval(subscriber);
   const timer = globalThis.setTimeout(() => {
     connectedAppRemovalTimers.delete(subscriber);
-    if (!state.connectedApps.has(subscriber)) return;
+    const existing = state.connectedApps.get(subscriber);
+    if (!existing) return;
+    const removedWasSlicer = matchesHubProduct(
+      existing.productName,
+      'slicer'
+    );
     state.connectedApps.delete(subscriber);
     updateConnectedAppButtons(state);
-    if (!hasConnectedThreeDSlicer(state)) {
+    // Only leave Slicer worklist mode when a Slicer peer actually left —
+    // not when OHIF/IRA/etc. disconnect while Slicer was never connected.
+    if (removedWasSlicer && !hasConnectedThreeDSlicer(state)) {
       onThreeDSlicerDisconnected(state);
     }
     if (
@@ -2369,6 +2379,42 @@ export async function ensureFlexrayLoaded(
     }
   })();
   return flexrayLoadPromise;
+}
+
+let vox2SegLamLoadPromise: Promise<void> | null = null;
+let vox2SegLamLoaded = false;
+
+/** Load builtin Vox2SegLAM T1 MRI studies once (org: vox2seglam). */
+export async function ensureVox2SegLamLoaded(
+  state: AppState,
+  onStatus?: (msg: string) => void
+): Promise<void> {
+  if (vox2SegLamLoaded) return;
+  if (vox2SegLamLoadPromise) return vox2SegLamLoadPromise;
+  vox2SegLamLoadPromise = (async () => {
+    onStatus?.('Loading Vox2SegLAM…');
+    try {
+      const samples = await loadVox2SegLamStudies();
+      state.allStudies = replaceVox2SegLamStudies(state.allStudies, samples);
+      vox2SegLamLoaded = true;
+      notifyWorklist(state);
+      onStatus?.(
+        `Vox2SegLAM · ${samples.length.toLocaleString()} studies`
+      );
+      console.info(
+        `${LOG_PREFIX} loaded Vox2SegLAM`,
+        samples.length,
+        WORKLIST_ORG_VOX2SEGLAM
+      );
+    } catch (err) {
+      vox2SegLamLoadPromise = null;
+      onStatus?.(
+        err instanceof Error ? err.message : 'Failed to load Vox2SegLAM'
+      );
+      throw err;
+    }
+  })();
+  return vox2SegLamLoadPromise;
 }
 
 function buildPublishPayload(

@@ -1,13 +1,20 @@
 import { DicomMetadataStore } from '@ohif/core';
 
 export const HUB_US_ANNOTATION_MODE_ROUTE = 'usAnnotation';
+export const HUB_SEGMENTATION_MODE_ROUTE = 'segmentation';
 
-function seriesModalityIsUs(modality: unknown): boolean {
-  return String(modality ?? '').trim().toUpperCase() === 'US';
+function normalizeSeriesModality(modality: unknown): string {
+  let m = String(modality ?? '')
+    .trim()
+    .toUpperCase();
+  if (m === 'MRI') m = 'MR';
+  return m;
 }
 
-/** True when any series (or its first instance) in the study is Modality US. */
-export function studyHasUltrasoundModality(studyInstanceUID: string): boolean {
+function studyHasModality(
+  studyInstanceUID: string,
+  want: string
+): boolean {
   const uid = studyInstanceUID.trim();
   if (!uid) {
     return false;
@@ -17,17 +24,29 @@ export function studyHasUltrasoundModality(studyInstanceUID: string): boolean {
     return false;
   }
   return study.series.some(series => {
-    if (seriesModalityIsUs(series.Modality)) {
+    if (normalizeSeriesModality(series.Modality) === want) {
       return true;
     }
     const instance = series.instances?.[0];
-    return instance != null && seriesModalityIsUs(instance.Modality);
+    return (
+      instance != null && normalizeSeriesModality(instance.Modality) === want
+    );
   });
 }
 
+/** True when any series (or its first instance) in the study is Modality US. */
+export function studyHasUltrasoundModality(studyInstanceUID: string): boolean {
+  return studyHasModality(studyInstanceUID, 'US');
+}
+
+/** True when any series (or its first instance) in the study is Modality MR. */
+export function studyHasMrModality(studyInstanceUID: string): boolean {
+  return studyHasModality(studyInstanceUID, 'MR');
+}
+
 /**
- * Pick OHIF mode route segment: explicit Hub `ohifMode` wins; else US studies
- * open in the ultrasound annotation mode (same intent as `/local` → microscopy for SM).
+ * Pick OHIF mode route segment: explicit Hub `ohifMode` wins; else US →
+ * usAnnotation, MR → segmentation, otherwise basic viewer.
  */
 export function resolveHubModeRoute(
   studyUIDs: string[],
@@ -41,6 +60,9 @@ export function resolveHubModeRoute(
   }
   if (studyUIDs.some(studyHasUltrasoundModality)) {
     return HUB_US_ANNOTATION_MODE_ROUTE;
+  }
+  if (studyUIDs.some(studyHasMrModality)) {
+    return HUB_SEGMENTATION_MODE_ROUTE;
   }
   return 'viewer';
 }

@@ -38,6 +38,7 @@ export const WORKLIST_ORG_SLICER_SCENES = 'slicer-scenes';
 export const WORKLIST_ORG_CBCT_DENTAL = 'cbct-dental';
 export const WORKLIST_ORG_TXRV = 'torchxrayvision';
 export const WORKLIST_ORG_FLEXRAY = 'flexray';
+export const WORKLIST_ORG_VOX2SEGLAM = 'vox2seglam';
 export const WORKLIST_ORG_3D_SLICER = '3d-slicer';
 
 // Worklist filter values for IDC segmentation category worklists.
@@ -562,12 +563,13 @@ export function hubOriginFromEndpoint(hubEndpoint: string): string | null {
   }
 }
 
-export function resolveHubMetricsUrl(hubEndpoint: string): string | null {
+/** Public auth/config URL (includes hub ``started_at``; no admin token). */
+export function resolveHubAuthConfigUrl(hubEndpoint: string): string | null {
   const trimmed = String(hubEndpoint || '').trim();
   if (!trimmed) return null;
   try {
     const base = trimmed.endsWith('/') ? trimmed : `${trimmed}/`;
-    return new URL('admin/metrics', base).href;
+    return new URL('auth/config', base).href;
   } catch {
     return null;
   }
@@ -633,10 +635,13 @@ export function setStoredUserName(
 export async function fetchHubStartedAt(
   hubEndpoint: string
 ): Promise<string | null> {
-  const metricsUrl = resolveHubMetricsUrl(hubEndpoint);
-  if (!metricsUrl) return null;
+  const configUrl = resolveHubAuthConfigUrl(hubEndpoint);
+  if (!configUrl) return null;
   try {
-    const response = await fetch(metricsUrl, { method: 'GET' });
+    const response = await fetch(configUrl, {
+      method: 'GET',
+      headers: { Accept: 'application/json' },
+    });
     if (!response.ok) return null;
     const data = await response.json();
     const started = data?.started_at;

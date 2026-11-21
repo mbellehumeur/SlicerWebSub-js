@@ -14,6 +14,7 @@ import {
   WORKLIST_ORG_CBCT_DENTAL,
   WORKLIST_ORG_TXRV,
   WORKLIST_ORG_FLEXRAY,
+  WORKLIST_ORG_VOX2SEGLAM,
   WORKLIST_ORG_3D_SLICER,
   IDC_CATEGORIES,
   IDC_KITS_CATEGORY,
@@ -904,6 +905,80 @@ export async function loadFlexrayStudies(): Promise<WorklistSample[]> {
       size: String(entry.size || '').trim() || undefined,
       format: String(entry.format || FORMAT_DICOM).trim() || FORMAT_DICOM,
       organization: WORKLIST_ORG_FLEXRAY,
+      modalities,
+      studyInstanceUID: studyInstanceUID || undefined,
+      seriesInstanceUID: seriesInstanceUID || undefined,
+      openMode:
+        String(entry.openMode || HUB_OPEN_MODE_IDC).trim() ||
+        HUB_OPEN_MODE_IDC,
+      ctCrdc,
+      bucket,
+      files: [
+        {
+          url: idcBucketPrefixUrl(bucket, ctCrdc),
+          fileName: `${ctCrdc}/`,
+          role: 'volume',
+        },
+      ],
+    });
+  }
+  return out;
+}
+
+export function isVox2SegLamSample(sample: WorklistSample | undefined): boolean {
+  return sample?.organization === WORKLIST_ORG_VOX2SEGLAM;
+}
+
+export function withoutVox2SegLamSamples(
+  studies: WorklistSample[]
+): WorklistSample[] {
+  return studies.filter((s) => !isVox2SegLamSample(s));
+}
+
+/** Replace all Vox2SegLAM rows with a fresh manifest mapping. */
+export function replaceVox2SegLamStudies(
+  studies: WorklistSample[],
+  vox2Samples: WorklistSample[]
+): WorklistSample[] {
+  return [...withoutVox2SegLamSamples(studies), ...vox2Samples];
+}
+
+type Vox2SegLamManifestStudy = TxrvManifestStudy;
+
+type Vox2SegLamManifest = {
+  studies?: Vox2SegLamManifestStudy[];
+};
+
+/** Load builtin Vox2SegLAM T1 MRI studies (org: vox2seglam). */
+export async function loadVox2SegLamStudies(): Promise<WorklistSample[]> {
+  const res = await fetch('./vox2seglam-manifest.json');
+  if (!res.ok) {
+    throw new Error(`Failed to load Vox2SegLAM manifest (${res.status})`);
+  }
+  const data = (await res.json()) as Vox2SegLamManifest;
+  const rows = Array.isArray(data.studies) ? data.studies : [];
+  const out: WorklistSample[] = [];
+  for (const entry of rows) {
+    const id = String(entry?.id || '').trim();
+    const studyInstanceUID = String(entry?.studyInstanceUID || '').trim();
+    const seriesInstanceUID = String(entry?.seriesInstanceUID || '').trim();
+    const ctCrdc =
+      String(entry?.ctCrdc || '').trim() || seriesInstanceUID;
+    if (!id || !ctCrdc) continue;
+    const modalities = Array.isArray(entry.modalities)
+      ? entry.modalities.map((m) => String(m).toUpperCase()).filter(Boolean)
+      : ['MR'];
+    const bucket =
+      String(entry.bucket || '').trim() || 'idc-open-data';
+    out.push({
+      id,
+      name: String(entry.name || id).trim() || id,
+      description:
+        String(entry.description || '').trim() ||
+        'Vox2SegLAM T1 MRI sample',
+      size: String(entry.size || '').trim() || undefined,
+      format: String(entry.format || FORMAT_DICOM).trim() || FORMAT_DICOM,
+      organization: WORKLIST_ORG_VOX2SEGLAM,
       modalities,
       studyInstanceUID: studyInstanceUID || undefined,
       seriesInstanceUID: seriesInstanceUID || undefined,

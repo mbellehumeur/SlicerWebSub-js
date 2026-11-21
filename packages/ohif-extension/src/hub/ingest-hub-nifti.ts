@@ -117,15 +117,31 @@ export async function ingestNiftiFromUrl(
   return studyUID;
 }
 
+/** Session-scoped blob: URLs kept alive for cornerstoneNiftiImageLoader frame loads. */
+const retainedNiftiBlobRevokers: Array<() => void> = [];
+
+/** Revoke hub-created NIfTI blob URLs (e.g. on Mode exit). Safe to call repeatedly. */
+export function revokeRetainedNiftiBlobUrls(): void {
+  while (retainedNiftiBlobRevokers.length) {
+    const revoke = retainedNiftiBlobRevokers.pop();
+    try {
+      revoke?.();
+    } catch {
+      // ignore
+    }
+  }
+}
+
 export async function ingestNiftiFile(
   file: File,
   remoteUrl?: string,
   seriesDescription?: string
 ): Promise<string | null> {
   const { url, revoke } = await resolveNiftiLoaderUrl(file, remoteUrl);
-  try {
-    return await ingestNiftiFromUrl(url, seriesDescription || file.name);
-  } finally {
-    revoke?.();
+  // Metadata ingest only hits the header; pixel loads happen later via XHR on
+  // the same URL. Revoking here caused ERR_FILE_NOT_FOUND / dataFetchState purged.
+  if (revoke) {
+    retainedNiftiBlobRevokers.push(revoke);
   }
+  return ingestNiftiFromUrl(url, seriesDescription || file.name);
 }

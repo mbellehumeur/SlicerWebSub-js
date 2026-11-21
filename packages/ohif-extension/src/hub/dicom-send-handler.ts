@@ -9,6 +9,7 @@ import {
 import { navigateToStudy } from './imaging-study-handler';
 import { ingestNiftiFile } from './ingest-hub-nifti';
 import { hangingProtocolIdFromSlicerPublisher } from './slicer-four-up';
+import { isAlreadyOnHubStudyViewer, resolveHubModeRoute } from './resolve-hub-mode-route';
 
 type DicomIngestCallbacks = {
   scheduleHubDicomSendLayer: (meta: {
@@ -27,13 +28,20 @@ export async function ingestDicomArrayBuffer(
     if (!ingested) {
       return;
     }
-    navigateToStudy(
-      ingested.studyUID,
-      undefined,
-      true,
-      undefined,
-      hangingProtocolId
-    );
+    // Late SEG/SR on an already-open study (any hub data source): do not
+    // remount Mode / switch hub-dicomweb → dicomlocal — that clears thumbnails
+    // and re-applies SeriesInstanceUIDs filter warnings. Attach as a layer only.
+    const modeRoute = resolveHubModeRoute([ingested.studyUID]);
+    const alreadyOnStudy = isAlreadyOnHubStudyViewer(ingested.studyUID, modeRoute);
+    if (!alreadyOnStudy) {
+      navigateToStudy(
+        ingested.studyUID,
+        undefined,
+        true,
+        undefined,
+        hangingProtocolId
+      );
+    }
     callbacks.scheduleHubDicomSendLayer({
       SeriesInstanceUID: ingested.seriesInstanceUID,
       SOPInstanceUID: ingested.sopInstanceUID,

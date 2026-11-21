@@ -1,0 +1,76 @@
+{
+  "organization": "vox2seglam",
+  "organizationLabel": "Vox2SegLAM",
+  "studies": [
+    {
+      "id": "vox2seglam-085c318f",
+      "name": "upenn_gbm · UPENN-GBM-00595 · MR",
+      "description": "upenn_gbm — UPENN-GBM-00595 — AX T1 3D MPRAGE : Processed_CaPTk",
+      "format": "DICOM",
+      "modalities": ["MR"],
+      "openMode": "idc",
+      "size": "22 MB",
+      "studyInstanceUID": "1.3.6.1.4.1.14519.5.2.1.193080014382577543414430394622898217991",
+      "seriesInstanceUID": "1.3.6.1.4.1.14519.5.2.1.267824285535152293303570228944209104682",
+      "ctCrdc": "085c318f-e180-47cd-b885-9b3e6224456d",
+      "bucket": "idc-open-data",
+      "collection": "upenn_gbm"
+    },
+    {
+      "id": "vox2seglam-425420bc",
+      "name": "upenn_gbm · UPENN-GBM-00595 · MR",
+      "description": "upenn_gbm — UPENN-GBM-00595 — AX T1 3D MPRAGE : Processed_CaPTk",
+      "format": "DICOM",
+      "modalities": ["MR"],
+      "openMode": "idc",
+      "size": "22 MB",
+      "studyInstanceUID": "1.3.6.1.4.1.14519.5.2.1.224448449956529270603548820752175474252",
+      "seriesInstanceUID": "1.3.6.1.4.1.14519.5.2.1.141633071291300625609699745858508164831",
+      "ctCrdc": "425420bc-4f2a-492f-9b87-af8f93259c96",
+      "bucket": "idc-open-data",
+      "collection": "upenn_gbm"
+    },
+    {
+      "id": "vox2seglam-f8233c07",
+      "name": "upenn_gbm · UPENN-GBM-00604 · MR",
+      "description": "upenn_gbm — UPENN-GBM-00604 — AX T1 3D MPRAGE : Processed_CaPTk",
+      "format": "DICOM",
+      "modalities": ["MR"],
+      "openMode": "idc",
+      "size": "22 MB",
+      "studyInstanceUID": "1.3.6.1.4.1.14519.5.2.1.74886835084619949689509549560065827005",
+      "seriesInstanceUID": "1.3.6.1.4.1.14519.5.2.1.70712476349236861322155595374931390180",
+      "ctCrdc": "f8233c07-e7f6-4a8d-b4a1-e8259608389a",
+      "bucket": "idc-open-data",
+      "collection": "upenn_gbm"
+    },
+    {
+      "id": "vox2seglam-3575eb51",
+      "name": "upenn_gbm · UPENN-GBM-00604 · MR",
+      "description": "upenn_gbm — UPENN-GBM-00604 — AXIAL T1 3D MPRAGE BRAIN POST : Processed_CaPTk",
+      "format": "DICOM",
+      "modalities": ["MR"],
+      "openMode": "idc",
+      "size": "22 MB",
+      "studyInstanceUID": "1.3.6.1.4.1.14519.5.2.1.189208401546079535388911000176517800205",
+      "seriesInstanceUID": "1.3.6.1.4.1.14519.5.2.1.200654692464281380117298123121977604606",
+      "ctCrdc": "3575eb51-7b84-43cd-bf21-95c2dd9a76a6",
+      "bucket": "idc-open-data",
+      "collection": "upenn_gbm"
+    },
+    {
+      "id": "vox2seglam-07604243",
+      "name": "upenn_gbm · UPENN-GBM-00610 · MR",
+      "description": "upenn_gbm — UPENN-GBM-00610 — AXIAL T1 3D MPRAGE BRAIN POST : Processed_CaPTk",
+      "format": "DICOM",
+      "modalities": ["MR"],
+      "openMode": "idc",
+      "size": "22 MB",
+      "studyInstanceUID": "1.3.6.1.4.1.14519.5.2.1.165855014163544662518971138612194745248",
+      "seriesInstanceUID": "1.3.6.1.4.1.14519.5.2.1.316109863796135119011320472564814774111",
+      "ctCrdc": "07604243-df2c-4c3f-9f46-c026df23d932",
+      "bucket": "idc-open-data",
+      "collection": "upenn_gbm"
+    }
+  ]
+}

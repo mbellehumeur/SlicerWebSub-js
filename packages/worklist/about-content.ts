@@ -10,7 +10,7 @@ const DEFAULT_ABOUT_NAME = 'Hub Interface worklist example client';
 const DEFAULT_ABOUT_DESCRIPTION =
   '3D Slicer extension for desktop integration workflows for healthcare providers and researchers.';
 const DEFAULT_ABOUT_HOMEPAGE =
-  'https://github.com/hub-interface/SlicerHub/';
+  'https://github.com/mbellehumeur/SlicerWebSub/';
 
 const IDC_PORTAL_URL = 'https://portal.imaging.datacommons.cancer.gov/';
 const KITWARE_DATA_URL = 'https://data.kitware.com/';
@@ -36,7 +36,7 @@ function escapeHtml(value: unknown): string {
 }
 
 function aboutLicenseAckHtml(homepage: string): string {
-  const licenseUrl = `${String(homepage || '').replace(/\/$/, '')}/blob/main/LICENSE`;
+  const licenseUrl = `${String(homepage || '').replace(/\/$/, '')}/blob/main/LICENSE.txt`;
   return `
     <div class="about-disclaimer">
       <h4>License</h4>

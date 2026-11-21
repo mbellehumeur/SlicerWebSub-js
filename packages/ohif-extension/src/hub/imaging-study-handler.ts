@@ -27,7 +27,10 @@ import {
   loadHubStudyFilesFromPayloads,
   loadHubStudyFilesFromUrls,
 } from './load-hub-study-files';
-import { resolveImagingStudyHangingProtocolId } from './slicer-four-up';
+import {
+  ohifModeForImagingStudyContext,
+  resolveImagingStudyHangingProtocolId,
+} from './slicer-four-up';
 import type { HubEvent } from './types';
 
 type DicomIngestCallbacks = {
@@ -60,10 +63,10 @@ export function navigateToStudy(
   hangingProtocolId?: string
 ): void {
   const modeRoute = resolveHubModeRoute([studyUID], ohifMode);
-  const dataSource = useLocalDataSource ? HUB_LOCAL_DATA_SOURCE : undefined;
   const hp = String(hangingProtocolId || '').trim();
-  // Always re-navigate when applying a hanging protocol so Mode picks it up.
-  if (!hp && isAlreadyOnHubStudyViewer(studyUID, modeRoute, dataSource)) {
+  // Already on this study in any hub viewer (dicomlocal or hub-dicomweb): stay put
+  // unless a hanging protocol must remount Mode. Do not force a data-source switch.
+  if (!hp && isAlreadyOnHubStudyViewer(studyUID, modeRoute)) {
     return;
   }
   navigateToHubViewer([studyUID], {
@@ -102,6 +105,9 @@ export class ImagingStudyHandler {
     const plan =
       (await enrichImagingStudyOpenPlanWithSlimIndex(normalizedContext)) ||
       resolveImagingStudyOpenPlan(normalizedContext);
+    const ohifMode =
+      String(plan?.ohifMode || '').trim() ||
+      ohifModeForImagingStudyContext(normalizedContext);
 
     console.info(`${LOG_PREFIX} imagingstudy-open`, {
       context: normalizedContext,
@@ -109,12 +115,14 @@ export class ImagingStudyHandler {
       downloadEntries,
       niftiHint: hasNiftiDownloadHint(downloadEntries),
       hangingProtocolId: hangingProtocolId || undefined,
+      ohifMode: ohifMode || undefined,
     });
 
     const inlinePayloads = extractInlineOpenFilePayloads(event);
     if (inlinePayloads.length) {
       await loadHubStudyFilesFromPayloads(inlinePayloads, this.dicomCallbacks, {
         hangingProtocolId,
+        ohifMode,
       });
       return;
     }
@@ -122,13 +130,14 @@ export class ImagingStudyHandler {
     if (plan?.mode === 'idc' && plan.files.length > 0) {
       await loadHubIdcStudyFiles(plan, this.dicomCallbacks, {
         hangingProtocolId,
+        ohifMode,
       });
       return;
     }
 
     if (plan?.mode === 'dicom-url' && plan.files.length > 0) {
       await loadHubStudyFilesFromUrls(plan.files, this.dicomCallbacks, {
-        ohifMode: plan.ohifMode,
+        ohifMode: ohifMode || plan.ohifMode,
         hangingProtocolId,
       });
       return;
@@ -137,7 +146,7 @@ export class ImagingStudyHandler {
     // DICOMweb before generic downloadEntries: IDC lung contexts include
     // context.files[] as idcFallback only, not as the primary open path.
     if (plan?.mode === 'dicomweb') {
-      await this.openDicomwebPlan(plan, hangingProtocolId);
+      await this.openDicomwebPlan(plan, hangingProtocolId, ohifMode);
       return;
     }
 
@@ -153,7 +162,7 @@ export class ImagingStudyHandler {
       await loadHubStudyFilesFromUrls(
         toHubFileEntries(downloadEntries),
         this.dicomCallbacks,
-        { ohifMode: plan?.ohifMode, hangingProtocolId }
+        { ohifMode: ohifMode || plan?.ohifMode, hangingProtocolId }
       );
       return;
     }
@@ -172,7 +181,7 @@ export class ImagingStudyHandler {
           studyUID.trim(),
           undefined,
           false,
-          undefined,
+          ohifMode,
           hangingProtocolId
         );
       } else {
@@ -185,7 +194,7 @@ export class ImagingStudyHandler {
 
     if (plan.mode === 'files' && plan.files.length > 0) {
       await loadHubStudyFilesFromUrls(plan.files, this.dicomCallbacks, {
-        ohifMode: plan.ohifMode,
+        ohifMode: ohifMode || plan.ohifMode,
         hangingProtocolId,
       });
       return;
@@ -226,8 +235,10 @@ export class ImagingStudyHandler {
       NonNullable<ReturnType<typeof resolveImagingStudyOpenPlan>>,
       { mode: 'dicomweb' }
     >,
-    hangingProtocolId?: string
+    hangingProtocolId?: string,
+    ohifMode?: string
   ): Promise<void> {
+    const modeRoute = String(ohifMode || plan.ohifMode || '').trim() || undefined;
     const idcFallbackPlan = plan.idcFallback?.files?.length
       ? {
           mode: 'idc' as const,
@@ -236,7 +247,7 @@ export class ImagingStudyHandler {
           seriesInstanceUID: plan.idcFallback.seriesInstanceUID,
           sourceBucket: plan.idcFallback.sourceBucket,
           files: plan.idcFallback.files,
-          ohifMode: plan.ohifMode,
+          ohifMode: modeRoute,
         }
       : null;
 
@@ -250,6 +261,7 @@ export class ImagingStudyHandler {
       );
       await loadHubIdcStudyFiles(idcFallbackPlan, this.dicomCallbacks, {
         hangingProtocolId,
+        ohifMode: modeRoute,
       });
       return;
     }
@@ -265,7 +277,7 @@ export class ImagingStudyHandler {
       navigateToHubViewer([plan.studyInstanceUID], {
         seriesUID: plan.seriesInstanceUID,
         dataSource: HUB_DICOMWEB_DATA_SOURCE,
-        modeRoute: plan.ohifMode,
+        modeRoute,
         hangingProtocolId,
       });
     } catch (error) {

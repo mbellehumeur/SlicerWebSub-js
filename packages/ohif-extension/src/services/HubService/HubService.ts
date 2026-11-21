@@ -27,10 +27,12 @@ import HubClient, {
   sameOpenImagingStudyContext,
   SCENE_UPDATE,
   SKIP_STUDY_RELOAD_TOAST,
+  parseStatusUpdateMessage,
   totalSegmentatorAvailableFromStatusResponses,
   type CastConferenceView,
   type CastPublishEnvelopeFields,
 } from '@slicer-hub/client';
+import { revokeRetainedNiftiBlobUrls } from '../../hub/ingest-hub-nifti';
 
 /** Hub wire event when scene leadership transfers. */
 const CONFERENCE_LEAD = 'conference-lead';
@@ -69,7 +71,23 @@ import {
 } from '../../hub/dicom-send-handler';
 import {
   buildHubUrlSendManifestFromActiveSeries,
+  type HubUrlSendManifest,
 } from '../../hub/publish/build-dicom-send-url-manifest';
+
+/** Study/series UIDs for worker result-cache keys (event.context). */
+function studySeriesContextFields(manifest: HubUrlSendManifest): {
+  studyInstanceUID?: string;
+  seriesInstanceUID?: string;
+} {
+  return {
+    ...(manifest.studyInstanceUID
+      ? { studyInstanceUID: manifest.studyInstanceUID }
+      : {}),
+    ...(manifest.seriesInstanceUID
+      ? { seriesInstanceUID: manifest.seriesInstanceUID }
+      : {}),
+  };
+}
 import {
   buildDicomSendFromActiveSeries,
   buildDicomSendFromActiveStudy,
@@ -198,6 +216,8 @@ export default class HubService extends PubSubService {
   public static EVENTS = {
     MESSAGE_RECEIVED: 'event::HubService:messageReceived',
     STATUS_CHANGED: 'event::HubService:statusChanged',
+    /** Inbound hub ``status-update`` lines for Evidence Creators / job logs. */
+    INFERENCE_STATUS_UPDATE: 'event::HubService:inferenceStatusUpdate',
   };
 
   public static REGISTRATION = {
@@ -354,6 +374,7 @@ export default class HubService extends PubSubService {
   }
 
   public destroy(): void {
+    revokeRetainedNiftiBlobUrls();
     if (this._unwireSegmentLabelI18n) {
       this._unwireSegmentLabelI18n();
       this._unwireSegmentLabelI18n = null;
@@ -742,6 +763,7 @@ export default class HubService extends PubSubService {
           'hub.event': manifest.hubEvent,
           context: {
             files: manifest.files,
+            ...studySeriesContextFields(manifest),
             ...contextExtras,
           },
         },
@@ -774,6 +796,7 @@ export default class HubService extends PubSubService {
           'hub.event': manifest.hubEvent,
           context: {
             files: manifest.files,
+            ...studySeriesContextFields(manifest),
             totalSegmentator,
           },
         },
@@ -812,6 +835,7 @@ export default class HubService extends PubSubService {
           'hub.event': manifest.hubEvent,
           context: {
             files: manifest.files,
+            ...studySeriesContextFields(manifest),
           },
         },
       },
@@ -852,6 +876,7 @@ export default class HubService extends PubSubService {
           'hub.event': manifest.hubEvent,
           context: {
             files: manifest.files,
+            ...studySeriesContextFields(manifest),
           },
         },
       },
@@ -924,12 +949,10 @@ export default class HubService extends PubSubService {
         return;
       }
       if (hubEvent === 'status-update') {
-        const context = event.context;
-        const raw =
-          context && typeof context === 'object' && !Array.isArray(context)
-            ? (context as { message?: unknown }).message
-            : undefined;
-        if (typeof raw === 'string') {
+        const parsed = parseStatusUpdateMessage(message);
+        const raw = parsed?.message?.trim() || '';
+        if (raw) {
+          const level = String(parsed?.level || 'info').trim() || 'info';
           const sourceProduct = String(
             message['subscriber.product.name'] ?? ''
           ).trim();
@@ -942,6 +965,11 @@ export default class HubService extends PubSubService {
           } else {
             this.appendTotalSegmentatorJobStatusLine(raw);
           }
+          this._broadcastEvent(HubService.EVENTS.INFERENCE_STATUS_UPDATE, {
+            message: raw,
+            level,
+            product: sourceProduct,
+          });
           this._broadcastHubStatus();
         }
         return;
@@ -1551,13 +1579,45 @@ export default class HubService extends PubSubService {
       return true;
     }
 
+    // Wait until the viewport has a base image/volume before attaching overlays.
+    if (!currentUids.length) {
+      return false;
+    }
+
+    const modality = String(displaySet.Modality || '').toUpperCase();
+    const isOverlay =
+      modality === 'SEG' || modality === 'RTSTRUCT' || modality === 'SR';
+
+    if (modality === 'SEG' || modality === 'RTSTRUCT') {
+      const refUid = displaySet.referencedDisplaySetInstanceUID;
+      if (!refUid || !displaySetService.getDisplaySetByUID(refUid)) {
+        return false;
+      }
+    }
+
     try {
-      this._commandsManager.runCommand('addDisplaySetAsLayer', {
-        viewportId,
-        displaySetInstanceUID: uid,
-      });
+      if (isOverlay) {
+        // Prefer hydration so SEG/SR do not rebuild volume inputs via bare layer add.
+        const result = this._commandsManager.runCommand('hydrateSecondaryDisplaySet', {
+          displaySet,
+          viewportId,
+        });
+        if (result && typeof (result as Promise<unknown>).then === 'function') {
+          void (result as Promise<unknown>).catch(err => {
+            console.warn(`${LOG_PREFIX} hydrateSecondaryDisplaySet failed`, err);
+          });
+        }
+      } else {
+        this._commandsManager.runCommand('addDisplaySetAsLayer', {
+          viewportId,
+          displaySetInstanceUID: uid,
+        });
+      }
     } catch (err) {
-      console.warn(`${LOG_PREFIX} addDisplaySetAsLayer failed`, err);
+      console.warn(
+        `${LOG_PREFIX} ${isOverlay ? 'hydrateSecondaryDisplaySet' : 'addDisplaySetAsLayer'} failed`,
+        err
+      );
       return false;
     }
     return true;

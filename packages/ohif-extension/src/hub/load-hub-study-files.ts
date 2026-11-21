@@ -434,7 +434,7 @@ function isSegIdcPlanFile(entry: IdcPlanFile): boolean {
 export async function loadHubIdcStudyFiles(
   plan: ImagingStudyIdcOpen,
   callbacks: DicomIngestCallbacks,
-  options?: { hangingProtocolId?: string }
+  options?: { hangingProtocolId?: string; ohifMode?: string }
 ): Promise<void> {
   const studyUIDs = new Set<string>();
   const seriesUIDs = new Set<string>();
@@ -499,7 +499,7 @@ export async function loadHubIdcStudyFiles(
   navigateToHubViewer(studyList, {
     seriesUID,
     dataSource: HUB_IDC_DATA_SOURCE,
-    modeRoute: plan.ohifMode,
+    modeRoute: String(plan.ohifMode || options?.ohifMode || '').trim() || undefined,
     hangingProtocolId: options?.hangingProtocolId,
   });
 
@@ -580,7 +580,7 @@ export async function loadHubStudyFilesFromUrls(
 export async function loadHubStudyFilesFromPayloads(
   payloads: FilePayload[],
   callbacks: DicomIngestCallbacks,
-  options?: { hangingProtocolId?: string }
+  options?: { hangingProtocolId?: string; ohifMode?: string }
 ): Promise<void> {
   const downloaded = await payloadsToFiles(payloads);
   const expanded: File[] = [];
@@ -594,6 +594,7 @@ export async function loadHubStudyFilesFromPayloads(
   }
   navigateToHubViewer(studyUIDs, {
     useLocalDataSource: true,
+    modeRoute: options?.ohifMode,
     hangingProtocolId: options?.hangingProtocolId,
   });
 }

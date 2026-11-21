@@ -287,6 +287,8 @@ function EvidenceCreatorsDialog({
   const taskItems = useMemo(() => taskSelectItems(), []);
   const logRef = useRef<HTMLPreElement>(null);
   const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  /** Keep dialog open after ``Job finished`` when the run errored / empty SEG. */
+  const keepOpenAfterJobRef = useRef(false);
   const [rows, setRows] = useState<ProbeRow[]>(() =>
     HUB_INFERENCE_SERVERS.map(server => ({
       server,
@@ -455,6 +457,7 @@ function EvidenceCreatorsDialog({
       clearTimeout(closeTimerRef.current);
       closeTimerRef.current = null;
     }
+    keepOpenAfterJobRef.current = false;
     setSending(false);
     setSendError('');
     setLog('');
@@ -463,6 +466,40 @@ function EvidenceCreatorsDialog({
     // Refresh only when the dialog opens / connection changes.
     // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional open/ws gate
   }, [open, wsConnected, hubService]);
+
+  // Mirror IRA: feed inbound hub status-update lines into the dialog log.
+  useEffect(() => {
+    if (!open || !hubService) {
+      return;
+    }
+    const { unsubscribe } = hubService.subscribe(
+      HubService.EVENTS.INFERENCE_STATUS_UPDATE,
+      (payload?: { message?: string; level?: string }) => {
+        const message = String(payload?.message || '').trim();
+        if (!message) {
+          return;
+        }
+        const level = String(payload?.level || 'info').trim().toLowerCase();
+        appendLog(message);
+        if (
+          level === 'error' ||
+          /No segmentation to save/i.test(message) ||
+          /Segmentation failed/i.test(message) ||
+          /no output produced/i.test(message) ||
+          /Failed to publish/i.test(message)
+        ) {
+          keepOpenAfterJobRef.current = true;
+        }
+        if (/\bJob finished\b/i.test(message)) {
+          if (!keepOpenAfterJobRef.current) {
+            scheduleCloseAfterSegmentation();
+          }
+          keepOpenAfterJobRef.current = false;
+        }
+      }
+    );
+    return unsubscribe;
+  }, [open, hubService]);
 
   useEffect(() => {
     if (!open) {
@@ -605,6 +642,7 @@ function EvidenceCreatorsDialog({
         return;
       }
 
+      keepOpenAfterJobRef.current = false;
       appendLog(`Running ${selectedServer.title} (${selectedServer.product})…`);
       const response = await hubService.publishInferenceServerSend(
         selectedServer,
